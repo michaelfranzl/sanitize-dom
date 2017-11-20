@@ -4,7 +4,7 @@ Recursive sanitizer/filter for [WHATWG DOM](https://dom.spec.whatwg.org)s. Flexi
 
 This project is similar to [sanitize-html](https://github.com/punkave/sanitize-html) but works with the bare-metal DOM API rather than with HTML strings. Because it leverages the browser's own HTML parsing, it has a very small footprint and works in all modern browsers. It also works in Node.js by using an WHATWG DOM implementation like [jsdom](https://github.com/tmpvar/jsdom).
 
-Read the extensive [tests/test.js][tests] to see how sanitize-dom can be useful.
+Read the extensive [test cases](tests/test.js) to see how sanitize-dom can be useful.
 
 Run tests with
 
