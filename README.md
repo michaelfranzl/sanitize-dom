@@ -96,8 +96,9 @@ are the <a href="#filter">filter</a>s which are run on the node.</p>
 <li>return <code>null</code>, in which case <code>node</code> is removed.</li>
 </ol>
 <p>Note that newly generated <a href="#DomNode">DomNode</a>(s) are processed by running
-<a href="#sanitizeDom">sanitizeDom</a> on them, as if they had been part of the original tree.</p>
-<p>If a filter returns a newly generated <a href="#DomNode">DomNode</a> with the same <a href="#Tagname">Tagname</a> as <code>node</code>, it would cause the same filter to be called again, which may lead to an infinite loop if the filter is always returning the same result. In this case, in order to prevent the infinite loop, an exception is thrown immediately. The author of the filter must set custom attributes on the node (see <a href="#DomNode">DomNode</a>), which may or may not stop subsequent processing. With well-behaved filters it is possible to continue subsequent processing.</p>
+<a href="#sanitizeDom">sanitizeDom</a> on them, as if they had been part of the original tree.
+This has the following implication:</p>
+<p>If a filter returns a newly generated <a href="#DomNode">DomNode</a> with the same <a href="#Tagname">Tagname</a> as <code>node</code>, it would cause the same filter to be called again, which may lead to an infinite loop if the filter is always returning the same result. In this case, in order to prevent the infinite loop, an exception is thrown immediately. The author of the filter must set custom attributes (see <a href="#DomNode">DomNode</a>) on the node, which may or may not allow subsequent filtering/processing. With well-behaved filters it is possible to continue subsequent processing.</p>
 </dd>
 </dl>
 
@@ -137,7 +138,7 @@ HTML string, converts it to a sandboxed document (no scripts are executed, no
 remote content fetched) and runs sanitizeDom on it.
 
 **Kind**: global function  
-**Returns**: [<code>Array.&lt;DomNode&gt;</code>](#DomNode) - The root nodes of the HTML string.  
+**Returns**: [<code>Array.&lt;DomNode&gt;</code>](#DomNode) - The root nodes of the HTML string after parsing and processing  
 
 | Param | Type | Default |
 | --- | --- | --- |
@@ -296,8 +297,9 @@ Filter functions can either...
 
 Note that newly generated [DomNode](#DomNode)(s) are processed by running
 [sanitizeDom](#sanitizeDom) on them, as if they had been part of the original tree.
+This has the following implication:
 
-If a filter returns a newly generated [DomNode](#DomNode) with the same [Tagname](#Tagname) as `node`, it would cause the same filter to be called again, which may lead to an infinite loop if the filter is always returning the same result. In this case, in order to prevent the infinite loop, an exception is thrown immediately. The author of the filter must set custom attributes on the node (see [DomNode](#DomNode)), which may or may not stop subsequent processing. With well-behaved filters it is possible to continue subsequent processing.
+If a filter returns a newly generated [DomNode](#DomNode) with the same [Tagname](#Tagname) as `node`, it would cause the same filter to be called again, which may lead to an infinite loop if the filter is always returning the same result. In this case, in order to prevent the infinite loop, an exception is thrown immediately. The author of the filter must set custom attributes (see [DomNode](#DomNode)) on the node, which may or may not allow subsequent filtering/processing. With well-behaved filters it is possible to continue subsequent processing.
 
 **Kind**: global typedef  
 

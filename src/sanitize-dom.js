@@ -113,8 +113,9 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
  * 
  * Note that newly generated {@link DomNode}(s) are processed by running
  * {@link sanitizeDom} on them, as if they had been part of the original tree.
+ * This has the following implication:
  * 
- * If a filter returns a newly generated {@link DomNode} with the same {@link Tagname} as `node`, it would cause the same filter to be called again, which may lead to an infinite loop if the filter is always returning the same result. In this case, in order to prevent the infinite loop, an exception is thrown immediately. The author of the filter must set custom attributes on the node (see {@link DomNode}), which may or may not stop subsequent processing. With well-behaved filters it is possible to continue subsequent processing.
+ * If a filter returns a newly generated {@link DomNode} with the same {@link Tagname} as `node`, it would cause the same filter to be called again, which may lead to an infinite loop if the filter is always returning the same result. In this case, in order to prevent the infinite loop, an exception is thrown immediately. The author of the filter must set custom attributes (see {@link DomNode}) on the node, which may or may not allow subsequent filtering/processing. With well-behaved filters it is possible to continue subsequent processing.
  * 
  * 
  * @callback filter

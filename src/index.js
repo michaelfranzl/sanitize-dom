@@ -48,7 +48,7 @@ function sanitizeChildNodes(doc, node, opts = {}) {
  * @param {DomDocument} doc
  * @param {string} html
  * @param {Object} [opts={}]
- * @returns {DomNode[]} The root nodes of the HTML string.
+ * @returns {DomNode[]} The root nodes of the HTML string after parsing and processing
  */
 function sanitizeHtml(doc, html, opts = {}) {
   if (!(doc && typeof doc.createElement == 'function')) { // simple interface check
