@@ -18,6 +18,10 @@ const sanitizeDom = require('./sanitize-dom.js');
 /**
  * Simple wrapper for {@link sanitizeDom} but sets `mode='node'`, thus processes
  * the node itself and its childNodes recursively.
+ * 
+ * @param {DomDocument} doc
+ * @param {DomNode} node
+ * @param {Object} [opts={}]
  */
 function sanitizeNode(doc, node, opts = {}) {
   sanitizeDom(doc, node, 'node', opts);
@@ -26,6 +30,10 @@ function sanitizeNode(doc, node, opts = {}) {
 /**
  * Simple wrapper for {@link sanitizeDom} but sets `mode='children'`, thus processes
  * only the node's childNodes recursively, but not the node itself.
+ * 
+ * @param {DomDocument} doc
+ * @param {DomNode} node
+ * @param {Object} [opts={}]
  */
 function sanitizeChildNodes(doc, node, opts = {}) {
   sanitizeDom(doc, node, 'children', opts);
@@ -37,7 +45,10 @@ function sanitizeChildNodes(doc, node, opts = {}) {
  * HTML string, converts it to a sandboxed document (no scripts are executed, no
  * remote content fetched) and runs sanitizeDom on it.
  * 
- * @returns {DomNode[]} The childNodes of the HTML string.
+ * @param {DomDocument} doc
+ * @param {string} html
+ * @param {Object} [opts={}]
+ * @returns {DomNode[]} The root nodes of the HTML string.
  */
 function sanitizeHtml(doc, html, opts = {}) {
   if (!(doc && typeof doc.createElement == 'function')) { // simple interface check

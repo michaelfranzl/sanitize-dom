@@ -19,15 +19,15 @@ Run code coverage test with
 ## Functions
 
 <dl>
-<dt><a href="#sanitizeNode">sanitizeNode()</a></dt>
+<dt><a href="#sanitizeNode">sanitizeNode(doc, node, [opts])</a></dt>
 <dd><p>Simple wrapper for <a href="#sanitizeDom">sanitizeDom</a> but sets <code>mode=&#39;node&#39;</code>, thus processes
 the node itself and its childNodes recursively.</p>
 </dd>
-<dt><a href="#sanitizeChildNodes">sanitizeChildNodes()</a></dt>
+<dt><a href="#sanitizeChildNodes">sanitizeChildNodes(doc, node, [opts])</a></dt>
 <dd><p>Simple wrapper for <a href="#sanitizeDom">sanitizeDom</a> but sets <code>mode=&#39;children&#39;</code>, thus processes
 only the node&#39;s childNodes recursively, but not the node itself.</p>
 </dd>
-<dt><a href="#sanitizeHtml">sanitizeHtml()</a> ⇒ <code><a href="#DomNode">Array.&lt;DomNode&gt;</a></code></dt>
+<dt><a href="#sanitizeHtml">sanitizeHtml(doc, html, [opts])</a> ⇒ <code><a href="#DomNode">Array.&lt;DomNode&gt;</a></code></dt>
 <dd><p>Simple wrapper for <a href="#sanitizeDom">sanitizeDom</a>. Instead of a DomNode, it takes an
 HTML string, converts it to a sandboxed document (no scripts are executed, no
 remote content fetched) and runs sanitizeDom on it.</p>
@@ -103,27 +103,48 @@ are the <a href="#filter">filter</a>s which are run on the node.</p>
 
 <a name="sanitizeNode"></a>
 
-## sanitizeNode()
+## sanitizeNode(doc, node, [opts])
 Simple wrapper for [sanitizeDom](#sanitizeDom) but sets `mode='node'`, thus processes
 the node itself and its childNodes recursively.
 
 **Kind**: global function  
+
+| Param | Type | Default |
+| --- | --- | --- |
+| doc | [<code>DomDocument</code>](#DomDocument) |  | 
+| node | [<code>DomNode</code>](#DomNode) |  | 
+| [opts] | <code>Object</code> | <code>{}</code> | 
+
 <a name="sanitizeChildNodes"></a>
 
-## sanitizeChildNodes()
+## sanitizeChildNodes(doc, node, [opts])
 Simple wrapper for [sanitizeDom](#sanitizeDom) but sets `mode='children'`, thus processes
 only the node's childNodes recursively, but not the node itself.
 
 **Kind**: global function  
+
+| Param | Type | Default |
+| --- | --- | --- |
+| doc | [<code>DomDocument</code>](#DomDocument) |  | 
+| node | [<code>DomNode</code>](#DomNode) |  | 
+| [opts] | <code>Object</code> | <code>{}</code> | 
+
 <a name="sanitizeHtml"></a>
 
-## sanitizeHtml() ⇒ [<code>Array.&lt;DomNode&gt;</code>](#DomNode)
+## sanitizeHtml(doc, html, [opts]) ⇒ [<code>Array.&lt;DomNode&gt;</code>](#DomNode)
 Simple wrapper for [sanitizeDom](#sanitizeDom). Instead of a DomNode, it takes an
 HTML string, converts it to a sandboxed document (no scripts are executed, no
 remote content fetched) and runs sanitizeDom on it.
 
 **Kind**: global function  
-**Returns**: [<code>Array.&lt;DomNode&gt;</code>](#DomNode) - The childNodes of the HTML string.  
+**Returns**: [<code>Array.&lt;DomNode&gt;</code>](#DomNode) - The root nodes of the HTML string.  
+
+| Param | Type | Default |
+| --- | --- | --- |
+| doc | [<code>DomDocument</code>](#DomDocument) |  | 
+| html | <code>string</code> |  | 
+| [opts] | <code>Object</code> | <code>{}</code> | 
+
 <a name="sanitizeDom"></a>
 
 ## sanitizeDom(doc, node, [mode], [opts])
