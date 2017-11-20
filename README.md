@@ -1,6 +1,6 @@
 # sanitize-dom
 
-Recursive sanitizer/filter of [WHATWG DOM](https://dom.spec.whatwg.org)s. Flexible use cases with convenient configuration options. More complex filtering can be implemented via filters (callback functions).
+Recursive sanitizer/filter for [WHATWG DOM](https://dom.spec.whatwg.org)s. Flexible use cases with convenient configuration options. More complex filtering can be implemented via filters (callback functions).
 
 This project is similar to [sanitize-html](https://github.com/punkave/sanitize-html) but works with the bare-metal DOM API rather than with HTML strings. Because it leverages the browser's own HTML parsing, it has a very small footprint and works in all modern browsers. It also works in Node.js by using an WHATWG DOM implementation like [jsdom](https://github.com/tmpvar/jsdom).
 
