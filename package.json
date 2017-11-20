@@ -1,0 +1,23 @@
+{
+  "name": "sanitize-dom",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/sanitize-dom.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "./node_modules/.bin/mocha ./tests/test.js",
+    "coverage": "./node_modules/.bin/nyc ./node_modules/.bin/mocha ./tests/test.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "gulp": "^3.9.1",
+    "jsdoc-to-markdown": "^3.0.2",
+    "jsdom": "^11.3.0",
+    "mocha": "^4.0.1",
+    "nyc": "^11.3.0",
+    "showdown": "^1.8.2"
+  }
+}
