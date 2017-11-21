@@ -2,7 +2,7 @@
   "name": "sanitize-dom",
   "version": "1.0.0",
   "description": "",
-  "main": "src/sanitize-dom.js",
+  "main": "src/index.js",
   "directories": {
     "test": "test"
   },
@@ -11,7 +11,7 @@
     "coverage": "./node_modules/.bin/nyc ./node_modules/.bin/mocha ./tests/test.js"
   },
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "devDependencies": {
     "gulp": "^3.9.1",
     "jsdoc-to-markdown": "^3.0.2",
