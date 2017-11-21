@@ -41,6 +41,46 @@ describe('initialization', function() {
   
 });
 
+describe('join_siblings', function() {
+  
+  it('should join same-tag siblings of specified tags', function() {
+    assert.equal(
+      sanitizeHtml('<b>abc</b> <b>def</b> <i>jkl</i>', {
+        join_siblings: ['B', 'I'],
+        allow_tags_direct: {
+          '.*': '.*',
+        }
+      }),
+      '<b>abc def</b> <i>jkl</i>'
+    );
+  });
+  
+  it('should join same-tag siblings of specified tags and leave children intact', function() {
+    assert.equal(
+      sanitizeHtml('<b>abc</b> <b>def <i>ghi</i></b><b>jkl</b>', {
+        join_siblings: ['B', 'I'],
+        allow_tags_direct: {
+          '.*': '.*',
+        }
+      }),
+      '<b>abc def <i>ghi</i>jkl</b>'
+    );
+  });
+  
+  
+  it('should not join same-tag siblings when separated by non-whitespace text', function() {
+    assert.equal(
+      sanitizeHtml('<b>abc</b> x <b>def</b> <b>ghi <i>jkl</i></b><b>mno</b>', {
+        join_siblings: ['B', 'I'],
+        allow_tags_direct: {
+          '.*': '.*',
+        }
+      }),
+      '<b>abc</b> x <b>def ghi <i>jkl</i>mno</b>'
+    );
+  });
+});
+
 describe('allow_tags', function() {
   
   it('should flatten all markup by default', function() {

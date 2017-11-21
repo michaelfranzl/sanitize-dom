@@ -158,6 +158,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
  * @param {TagAttributeNameSpec} [opts.allow_attributes_by_tag={}] - Matching attribute names of a matching node are kept. Other attributes are removed.
  * @param {TagClassNameSpec} [opts.allow_classes_by_tag={}] - Matching class names of a matching node are kept. Other class names are removed. If no class names are remaining, the class attribute is removed.
  * @param {boolean} [opts.remove_empty=false] Remove nodes which are completely empty or contain only white space.
+ * @param {Tagname[]} [opts.join_siblings=[]] Join same-tag sibling nodes of given tag names, unless of course they are separated by non-whitespace textNodes.
  * 
 */
 function sanitizeDom(
@@ -190,6 +191,10 @@ function sanitizeDom(
   if (!opts.allow_attributes_by_tag) opts.allow_attributes_by_tag = {};
   if (!opts.allow_classes_by_tag) opts.allow_classes_by_tag = {};
   
+  if (!opts.join_siblings) opts.join_siblings = [];
+  
+  
+
 
   
   var parents = [];
@@ -366,6 +371,48 @@ function sanitizeDom(
     nd.remove();
   }
   
+  function joinSiblings(parent, tags) {
+    let children = childrenOf(parent);
+    
+    for (let i = 0; i < children.length; i++) {
+      let nd = children[i];
+      let nd1 = children[i+1];
+      let nd2 = children[i+2];
+      
+      if (
+        nd1 &&
+        nd.nodeName == nd1.nodeName &&
+        tags.includes(nd.nodeName) &&
+        tags.includes(nd1.nodeName)
+      ) {
+        for (let c of childrenOf(nd1)) {
+          nd.appendChild(c);
+        }
+        nd1.remove();
+        joinSiblings(parent, tags); // restart from beginning until nothing joinable
+        return;
+      }
+      
+      
+      if (
+        nd1 &&
+        nd2 &&
+        nd.nodeName == nd2.nodeName &&
+        nd1.nodeType == 3 &&
+        nd1.textContent.match(/^\s+$/) &&
+        tags.includes(nd2.nodeName)
+      ) {
+        nd.appendChild(nd1);
+        for (let c of childrenOf(nd2)) {
+          nd.appendChild(c);
+        }
+        nd2.remove();
+        joinSiblings(parent, tags); // restart from beginning until nothing joinable
+        return;
+      }
+    }
+  }
+  
   function sanitizeNode(nd) {
     if (nd.sanitize_skip) {
       delete nd.sanitize_skip;
@@ -448,6 +495,10 @@ function sanitizeDom(
       ) {
         nd.remove();
       }
+    }
+    
+    if (opts.join_siblings.length > 0) {
+      joinSiblings(parent, opts.join_siblings);
     }
   }
 }

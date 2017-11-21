@@ -184,6 +184,7 @@ Each node is processed in the following sequence:
 | [opts.allow_attributes_by_tag] | [<code>TagAttributeNameSpec</code>](#TagAttributeNameSpec) | <code>{}</code> | Matching attribute names of a matching node are kept. Other attributes are removed. |
 | [opts.allow_classes_by_tag] | [<code>TagClassNameSpec</code>](#TagClassNameSpec) | <code>{}</code> | Matching class names of a matching node are kept. Other class names are removed. If no class names are remaining, the class attribute is removed. |
 | [opts.remove_empty] | <code>boolean</code> | <code>false</code> | Remove nodes which are completely empty or contain only white space. |
+| [opts.join_siblings] | [<code>Array.&lt;Tagname&gt;</code>](#Tagname) | <code>[]</code> | Join same-tag sibling nodes of given tag names, unless of course they are separated by non-whitespace textNodes. |
 
 <a name="DomDocument"></a>
 
