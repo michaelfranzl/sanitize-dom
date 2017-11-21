@@ -70,6 +70,8 @@ describe('allow_tags', function() {
     );
   });
   
+  
+  
   describe('allow_tags_deep', function() {
   
     it('should allow direct children of BODY, i.e. no deep children', function() {
@@ -188,6 +190,22 @@ describe('flatten_tags', function() {
       '<b>good</b><p>Paragraph bold <i><b>flat</b></i> bold</p>'
     );
   });
+  
+  it('should flatten redundant B', function() {
+    assert.equal(
+      sanitizeHtml('<b>bold<i>italic<b>bolditalic</b></i></b>', {
+        flatten_tags_deep: {
+          'B': ['B'],
+        },
+        allow_tags_direct: {
+          '.*': '.*',
+        },
+      }),
+      '<b>bold<i>italicbolditalic</i></b>'
+    );
+  });
+  
+  
 });
 
 
@@ -218,6 +236,22 @@ describe('remove_tags', function() {
         },
       }),
       '<b>good</b><p>Paragraph   </p>'
+    );
+  });
+});
+
+
+
+describe('remove_empty', function() {
+  it('should remove empty nodes', function() {
+    assert.equal(
+      sanitizeHtml('<b><b></b></b><b>  </b><b> \n</b><b> \t\r</b>', {
+        remove_empty: true,
+        allow_tags_direct: {
+          '.*': '.*',
+        },
+      }),
+      ''
     );
   });
 });
