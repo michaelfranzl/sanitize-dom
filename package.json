@@ -1,17 +1,31 @@
 {
   "name": "sanitize-dom",
-  "version": "1.0.1",
-  "description": "",
+  "version": "1.1.0",
+  "description": "Recursive sanitizer/filter for WHATWG DOMs",
   "main": "src/index.js",
-  "directories": {
-    "test": "test"
-  },
   "scripts": {
     "test": "./node_modules/.bin/mocha ./tests/test.js",
     "coverage": "./node_modules/.bin/nyc ./node_modules/.bin/mocha ./tests/test.js"
   },
-  "author": "",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/michaelfranzl/sanitize-dom.git"
+  },
+  "keywords": [
+    "sanitize-html",
+    "dom",
+    "whatwg-dom",
+    "sanitizer",
+    "sanitization",
+    "html",
+    "recursive-algorithm"
+  ],
+  "author": "Michael Franzl",
   "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/michaelfranzl/sanitize-dom/issues"
+  },
+  "homepage": "https://github.com/michaelfranzl/sanitize-dom",
   "devDependencies": {
     "gulp": "^3.9.1",
     "jsdoc-to-markdown": "^3.0.2",

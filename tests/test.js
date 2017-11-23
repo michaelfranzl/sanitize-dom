@@ -19,7 +19,7 @@ const sanitizeHtml = function(html, opts = {}) {
 
 describe('initialization', function() {
   
-  it('should throw when no DOM API passed in', function() {
+  it('throws when no DOM API passed in', function() {
     assert.throws(
       function() {
         return function() {
@@ -29,7 +29,7 @@ describe('initialization', function() {
       }(), /Need DOM Document interface/);
   });
   
-  it('should throw when no node passed in', function() {
+  it('throws when no node passed in', function() {
     assert.throws(
       function() {
         return function() {
@@ -43,7 +43,7 @@ describe('initialization', function() {
 
 describe('join_siblings', function() {
   
-  it('should join same-tag siblings of specified tags', function() {
+  it('joins same-tag siblings of specified tags', function() {
     assert.equal(
       sanitizeHtml('<b>abc</b> <b>def</b> <i>jkl</i>', {
         join_siblings: ['B', 'I'],
@@ -55,7 +55,7 @@ describe('join_siblings', function() {
     );
   });
   
-  it('should join same-tag siblings of specified tags and leave children intact', function() {
+  it('joins same-tag siblings of specified tags and leaves children intact', function() {
     assert.equal(
       sanitizeHtml('<b>abc</b> <b>def <i>ghi</i></b><b>jkl</b>', {
         join_siblings: ['B', 'I'],
@@ -68,7 +68,7 @@ describe('join_siblings', function() {
   });
   
   
-  it('should not join same-tag siblings when separated by non-whitespace text', function() {
+  it('does not join same-tag siblings when separated by non-whitespace text', function() {
     assert.equal(
       sanitizeHtml('<b>abc</b> x <b>def</b> <b>ghi <i>jkl</i></b><b>mno</b>', {
         join_siblings: ['B', 'I'],
@@ -83,14 +83,14 @@ describe('join_siblings', function() {
 
 describe('allow_tags', function() {
   
-  it('should flatten all markup by default', function() {
+  it('flattens all tags', function() {
     assert.equal(
       sanitizeHtml('<div><p>Hello <b class="klass">there</b></p></div>'),
       'Hello there'
     );
   });
 
-  it('should keep all markup', function() {
+  it('keeps all tags', function() {
     assert.equal(
       sanitizeHtml('<div><p>Hello <b>there</b></p></div>', {
         allow_tags_direct: {
@@ -101,7 +101,7 @@ describe('allow_tags', function() {
     );
   });
 
-  it('should respect text nodes at top level', function() {
+  it('respects text nodes at top level', function() {
     assert.equal(
       sanitizeHtml('Blah blah blah<p>Whee!</p>', {
         allow_tags_direct: { '.*': '.*' },
@@ -114,20 +114,20 @@ describe('allow_tags', function() {
   
   describe('allow_tags_deep', function() {
   
-    it('should allow direct children of BODY, i.e. no deep children', function() {
+    it('keeps only direct children of BODY', function() {
       assert.equal(
-        sanitizeHtml('<i><b>keep</b></i><p>Paragraph <b>flat1</b> <i><b>flat2</b></i></p>', {
+        sanitizeHtml('<i><b>abc</b></i><p>Paragraph <b>flat1</b> <i><b>flat2</b></i></p>', {
           allow_tags_direct: {
             'BODY': '.*',
           },
         }),
-        '<i>keep</i><p>Paragraph flat1 flat2</p>'
+        '<i>abc</i><p>Paragraph flat1 flat2</p>'
       );
     });
 
-    it('should allow all children of BODY, and only direct B children of I', function() {
+    it('keeps deep P and I children of BODY, and only direct B children of I', function() {
       assert.equal(
-        sanitizeHtml('<i><b>keep</b></i><p>Paragraph <b>flat1</b> <i><b>flat2</b></i></p>', {
+        sanitizeHtml('<i><b>abc</b></i><p>Paragraph <b>def</b> <i><b>ghi</b></i></p>', {
           allow_tags_deep: {
             'BODY': ['P', 'I'],
           },
@@ -135,11 +135,11 @@ describe('allow_tags', function() {
             'I': ['B'],
           },
         }),
-        '<i><b>keep</b></i><p>Paragraph flat1 <i><b>flat2</b></i></p>'
+        '<i><b>abc</b></i><p>Paragraph def <i><b>ghi</b></i></p>'
       );
     });
     
-    it('should only keep P, H1 and H2, specified by regexp', function() {
+    it('keeps only P, H1 and H2, specified by regexp', function() {
       assert.equal(
         sanitizeHtml('<h1>Heading1</h1><p><span>Para</span>graph</p><h2>Subheading</h2><p>Paragraph</p><h3>Subsubheading</h3>', {
           allow_tags_direct: {
@@ -154,9 +154,9 @@ describe('allow_tags', function() {
   
   
   describe('allow_tags_deep', function() {
-    it('should allow all children of BODY, and deep B children of I', function() {
+    it('keeps only direct children of BODY, and deep B children of I', function() {
       assert.equal(
-        sanitizeHtml('<i><b>keep</b></i><p>Paragraph <b>flat1</b> <i><u><b>flat2</b></u></i></p>', {
+        sanitizeHtml('<i><b>keep</b></i><p>Paragraph <b>flat1</b> <i><u><b>keep</b></u></i></p>', {
           allow_tags_direct: {
             'BODY': '.*',
           },
@@ -165,18 +165,18 @@ describe('allow_tags', function() {
             'I': ['B'],
           },
         }),
-        '<i><b>keep</b></i><p>Paragraph flat1 <i><u><b>flat2</b></u></i></p>'
+        '<i><b>keep</b></i><p>Paragraph flat1 <i><u><b>keep</b></u></i></p>'
       );
     });
     
-    it('should only keep deep U and I, specified by regexp', function() {
+    it('keeps deep U and I, specified by regexp', function() {
       assert.equal(
-        sanitizeHtml('<i><b>keep</b></i><p>Paragraph <b>flat1</b> <i><u><b>flat2</b></u></i></p>', {
+        sanitizeHtml('<i><b>keep</b></i><p>Paragraph <b>flat1</b> <i><u><b>keep</b></u></i></p>', {
           allow_tags_deep: {
             '.*': ['(U|I)'],
           },
         }),
-        '<i>keep</i>Paragraph flat1 <i><u>flat2</u></i>'
+        '<i>keep</i>Paragraph flat1 <i><u>keep</u></i>'
       );
     });
   });
@@ -188,7 +188,7 @@ describe('allow_tags', function() {
 
 describe('flatten_tags', function() {
   
-  it('should give flatten_tags_* precedence over allow_tags', function() {
+  it('gives flatten_tags_* precedence over allow_tags', function() {
     assert.equal(
       sanitizeHtml('<b>good</b><p>Paragraph <b>bad</b> <i><b>flat</b></i></p>', {
         flatten_tags_deep: {
@@ -203,9 +203,9 @@ describe('flatten_tags', function() {
   });
 
 
-  it('should flatten B deeply nested in P', function() {
+  it('flattens B deeply nested in P', function() {
     assert.equal(
-      sanitizeHtml('<b>good</b><p>Paragraph <b>bad</b> <i><b>flat</b></i></p>', {
+      sanitizeHtml('<b>keep</b><p>Paragraph <b>flat</b> <i><b>abc</b></i></p>', {
         flatten_tags_deep: {
           'P': ['B'],
         },
@@ -213,13 +213,13 @@ describe('flatten_tags', function() {
           '.*': '.*',
         },
       }),
-      '<b>good</b><p>Paragraph bad <i>flat</i></p>'
+      '<b>keep</b><p>Paragraph flat <i>abc</i></p>'
     );
   });
   
-  it('should flatten direct B children of P', function() {
+  it('flattens direct B children of P', function() {
     assert.equal(
-      sanitizeHtml('<b>good</b><p>Paragraph <b>bold</b> <i><b>flat</b></i> <b>bold</b></p>', {
+      sanitizeHtml('<b>keep</b><p>Paragraph <b>flat</b> <i><b>keep</b></i> <b>flat</b></p>', {
         flatten_tags_direct: {
           'P': ['B'],
         },
@@ -227,11 +227,11 @@ describe('flatten_tags', function() {
           '.*': '.*',
         },
       }),
-      '<b>good</b><p>Paragraph bold <i><b>flat</b></i> bold</p>'
+      '<b>keep</b><p>Paragraph flat <i><b>keep</b></i> flat</p>'
     );
   });
   
-  it('should flatten redundant B', function() {
+  it('flattens redundant B', function() {
     assert.equal(
       sanitizeHtml('<b>bold<i>italic<b>bolditalic</b></i></b>', {
         flatten_tags_deep: {
@@ -250,9 +250,9 @@ describe('flatten_tags', function() {
 
 
 describe('remove_tags', function() {
-  it('should remove direct B children of P', function() {
+  it('removes direct B children of P', function() {
     assert.equal(
-      sanitizeHtml('<b>good</b><p>Paragraph <b>bold</b> <i><b>flat</b></i> <b>bold</b></p>', {
+      sanitizeHtml('<b>keep</b><p>Paragraph <b>remove</b> <i><b>keep</b></i> <b>bold</b></p>', {
         remove_tags_direct: {
           'P': ['B'],
         },
@@ -260,13 +260,13 @@ describe('remove_tags', function() {
           '.*': '.*',
         },
       }),
-      '<b>good</b><p>Paragraph  <i><b>flat</b></i> </p>'
+      '<b>keep</b><p>Paragraph  <i><b>keep</b></i> </p>'
     );
   });
   
-  it('should remove deeply nested B children of P, and remove remaining empty I tag', function() {
+  it('removes deeply nested B children of P, and remove remaining empty I tag', function() {
     assert.equal(
-      sanitizeHtml('<b>good</b><p>Paragraph <b>bold</b> <i><b>flat</b></i> <b>bold</b></p>', {
+      sanitizeHtml('<b>keep</b><p>Paragraph <b>remove</b> <i><b>remove</b></i> <b>bold</b></p>', {
         remove_empty: true,
         remove_tags_deep: {
           'P': ['B'],
@@ -275,7 +275,7 @@ describe('remove_tags', function() {
           '.*': '.*',
         },
       }),
-      '<b>good</b><p>Paragraph   </p>'
+      '<b>keep</b><p>Paragraph   </p>'
     );
   });
 });
@@ -283,7 +283,7 @@ describe('remove_tags', function() {
 
 
 describe('remove_empty', function() {
-  it('should remove empty nodes', function() {
+  it('removes empty nodes', function() {
     assert.equal(
       sanitizeHtml('<b><b></b></b><b>  </b><b> \n</b><b> \t\r</b>', {
         remove_empty: true,
@@ -300,7 +300,7 @@ describe('remove_empty', function() {
 
 describe('filters', function() {
   
-  it('should replace o characters to IMG tags, and replace `l` characters with `L`, implemented with two consecutive filters', function() {
+  it('replaces `o` characters with IMG tags, and replaces `l` characters with `L`, using two consecutive filters', function() {
     assert.equal(
       sanitizeHtml('Hello World', {
         allow_tags_direct: { '.*': '.*' },
@@ -360,15 +360,15 @@ describe('filters', function() {
     );
   });
   
-  it('should remove B tag', function() {
+  it('removes B tag', function() {
     assert.equal(
-      sanitizeHtml('<p>Paragraph <i><b>bold</b></i></p>', {
+      sanitizeHtml('<p>Paragraph <i><b>remove</b></i></p>', {
         allow_tags_direct: {
           '.*': '.*',
         },
         filters_by_tag: {
          'B': [function(node, parents, parent_tagnames) {
-           // return nothing means remove();
+           return null; // returning null will remove the node
          }]
         }
       }),
@@ -376,7 +376,7 @@ describe('filters', function() {
     );
   });
   
-  it('should modify B tag to have a different innerText', function() {
+  it('modifies B tag to have a different innerText', function() {
     assert.equal(
       sanitizeHtml('<p>Paragraph <i><b>bold</b></i></p>', {
         allow_tags_direct: {
@@ -395,7 +395,7 @@ describe('filters', function() {
     );
   });
   
-  it('should change B tag to EM tag', function() {
+  it('changes B tag to EM tag', function() {
     assert.equal(
       sanitizeHtml('<p>Paragraph <i><b>bold</b></i></p>', {
         allow_tags_direct: {
@@ -415,7 +415,7 @@ describe('filters', function() {
     );
   });
   
-  it('should change B tag to EM tag, then modify EM tag', function() {
+  it('changes B tag to EM tag, then modifies EM tag', function() {
     assert.equal(
       sanitizeHtml('<p>Paragraph <i><b>bold</b></i></p>', {
         allow_tags_direct: {
@@ -442,7 +442,7 @@ describe('filters', function() {
   });
   
   
-  it("should throw when a filter returns the same node type but doesn't set the property 'sanitize_skip_filters'" , function() {
+  it("throws when a filter returns the same node type but doesn't set the property 'sanitize_skip_filters'" , function() {
     assert.throws(
       function() {
         return function() {
@@ -465,7 +465,7 @@ describe('filters', function() {
       /Prevented possible infinite loop/);
   });
   
-  it("should prevent an infinite loop by setting sanitize_skip_filters'" , function() {
+  it("prevents an infinite loop by setting sanitize_skip_filters'" , function() {
     assert.equal(
       sanitizeHtml('<p>Paragraph</p>', {
         allow_tags_direct: {
@@ -487,7 +487,7 @@ describe('filters', function() {
   });
   
   
-  it('previous filter should skip later filters', function() {
+  it('skips later filters', function() {
     assert.equal(
       sanitizeHtml('<p><span class="precious">foo</span><span>foo</span></p>', {
         allow_tags_direct: {
@@ -512,7 +512,7 @@ describe('filters', function() {
     );
   });
   
-  it('should skip filtering nodes with sanitize_skip_filters property, set previously', function() {
+  it('skips filtering nodes with sanitize_skip_filters property, set before sanitization', function() {
     doc.body.innerHTML = '<p><span>foo</span><span>foo</span></p>';
     let firstspan = doc.body.getElementsByTagName('span')[0];
     firstspan.sanitize_skip_filters = true;
@@ -537,7 +537,7 @@ describe('filters', function() {
     );
   });
   
-  it('should remove sanitize_skip_filters property', function() {
+  it('removes sanitize_skip_filters property', function() {
     doc.body.innerHTML = '<p><span>foo</span><span>foo</span></p>';
     let firstspan = doc.body.getElementsByTagName('span')[0];
     firstspan.sanitize_skip_filters = true;
@@ -580,7 +580,8 @@ describe('filters', function() {
   
   
 describe('sanitize_skip property', function() {
-  it('should skip all sanitization with sanitize_skip property, set previously', function() {
+  
+  it('skips all sanitization when `sanitize_skip` property present, set before sanitization', function() {
     doc.body.innerHTML = '<p><span>foo</span><span>foo</span></p>';
     let firstspan = doc.body.getElementsByTagName('span')[0];
     firstspan.sanitize_skip = true;
@@ -597,7 +598,7 @@ describe('sanitize_skip property', function() {
     );
   });
   
-  it('should remove sanitize_skip property', function() {
+  it('removes `sanitize_skip` property', function() {
     doc.body.innerHTML = '<p><span>foo</span><span>foo</span></p>';
     let firstspan = doc.body.getElementsByTagName('span')[0];
     firstspan.sanitize_skip = true;
@@ -627,7 +628,7 @@ describe('sanitize_skip property', function() {
 
 describe('allow_attributes_by_tag', function() {
   
-  it('should pass through all attributes', function() {
+  it('keeps all attributes', function() {
     assert.equal(
       sanitizeHtml('<div><wiggly worms="ewww">hello</wiggly></div>', {
         allow_tags_direct: { '.*': '.*' },
@@ -637,7 +638,7 @@ describe('allow_attributes_by_tag', function() {
     );
   });
   
-  it('should pass through only allowed attributes, using regex', function() {
+  it('keeps only allowed attributes, using regex', function() {
     assert.equal(
       sanitizeHtml('<div><wiggly worms="ewww" warm="false">hello</wiggly><span worms="eww">world</span></div>', {
         allow_tags_direct: { '.*': '.*' },
@@ -651,7 +652,7 @@ describe('allow_attributes_by_tag', function() {
 
 describe('allow_classes_by_tag', function() {
   
-  it('should pass through all classes', function() {
+  it('keeps all classes', function() {
     assert.equal(
       sanitizeHtml('<div class="one">txt</div>', {
         allow_tags_direct: { '.*': '.*' },
@@ -661,7 +662,7 @@ describe('allow_classes_by_tag', function() {
     );
   });
   
-  it('should pass through only allowed classes, using regex', function() {
+  it('keeps only allowed classes, using regex', function() {
     assert.equal(
       sanitizeHtml('<div class="one two three thirty"><span class="two twenty thirty">txt</span></div>', {
         allow_tags_direct: { '.*': '.*' },
@@ -675,7 +676,7 @@ describe('allow_classes_by_tag', function() {
     );
   });
   
-  it('should remove class attribute when no classes remaining', function() {
+  it('removes class attribute when no classes remaining', function() {
     assert.equal(
       sanitizeHtml('<div class="abc">txt</div>', {
         allow_tags_direct: { '.*': '.*' },
