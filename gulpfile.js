@@ -22,7 +22,7 @@ gulp.task('readme', function() {
   });
   
   // for debugging only
-  fs.writeFileSync('README.html', converter.makeHtml(output));
+  //fs.writeFileSync('README.html', converter.makeHtml(output));
 });
 
 
@@ -35,10 +35,11 @@ gulp.task('build', function() {
       rollup_plugin_babel({
         exclude: 'node_modules/**',
         "presets": [
-          ["latest", {
-            "es2015": {
-              "modules": false
-            }
+          ["env", {
+            "targets": {
+              "browsers": ["> 90%"]
+            },
+            "modules": false
           }],
           ["minify", {
             "mangle": true
