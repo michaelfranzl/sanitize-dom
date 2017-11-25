@@ -4,17 +4,27 @@
 
 Recursive sanitizer/filter for [WHATWG DOM](https://dom.spec.whatwg.org)s. Flexible use cases with convenient configuration options. More complex filtering can be implemented via filters (callback functions).
 
-This project is similar to [sanitize-html](https://github.com/punkave/sanitize-html) but works with the bare-metal DOM API rather than with HTML strings. Because it leverages the browser's own HTML parsing, it has no dependencies and a very small footprint. It is not limited to browsers when using an WHATWG DOM implementation like [jsdom](https://github.com/tmpvar/jsdom).
+This project is similar to [sanitize-html](https://github.com/punkave/sanitize-html) but works with a bare-metal DOM API rather than with HTML strings. Because it leverages the browser's own HTML parsing, it has no dependencies and a very small footprint (only 7 kilobytes). It is not limited to browsers when using a WHATWG DOM implementation like [jsdom](https://github.com/tmpvar/jsdom).
 
-Read the extensive [test cases](tests/test.js) to see how sanitize-dom can be useful.
+The [test file](tests/test.js) describes usage and features.
 
-Run tests with
+Run tests:
 
     npm test
     
-Run code coverage test with
+Run code coverage:
 
     npm run coverage
+    
+Regenerate distribution files (`dist/sanitize-dom.umd.min.js` and `dist/sanitize-dom.umd.min.js.map`):
+
+    gulp build
+    
+Generate `README.md` with API documentation parsed from `jsdoc` sources:
+
+    gulp readme
+
+
 
 # API Reference
 
