@@ -27,11 +27,17 @@
   },
   "homepage": "https://github.com/michaelfranzl/sanitize-dom",
   "devDependencies": {
+    "babel-core": "^6.26.0",
+    "babel-plugin-external-helpers": "^6.22.0",
+    "babel-preset-latest": "^6.24.1",
+    "babel-preset-minify": "^0.2.0",
     "gulp": "^3.9.1",
     "jsdoc-to-markdown": "^3.0.2",
     "jsdom": "^11.3.0",
     "mocha": "^4.0.1",
     "nyc": "^11.3.0",
+    "rollup": "^0.51.8",
+    "rollup-plugin-babel": "^3.0.2",
     "showdown": "^1.8.2"
   }
 }

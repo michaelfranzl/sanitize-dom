@@ -13,7 +13,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 */
 
 
-const sanitizeDom = require('./sanitize-dom.js');
+import sanitizeDom from './sanitize-dom.js';
 
 /**
  * Simple wrapper for {@link sanitizeDom} but sets `mode='node'`, thus processes
@@ -69,7 +69,7 @@ function sanitizeHtml(doc, html, opts = {}) {
   return childrefs;
 }
 
-module.exports = {
+export default {
   sanitizeDom,
   sanitizeNode,
   sanitizeChildNodes,

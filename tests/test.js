@@ -1,6 +1,6 @@
 /*jshint esversion: 6 */
 
-const {sanitizeNode, sanitizeChildNodes} = require('../src/index.js');
+const {sanitizeNode, sanitizeChildNodes} = require('../dist/sanitize-dom.umd.min.js');
 
 const assert = require('assert');
 
@@ -658,7 +658,7 @@ describe('allow_classes_by_tag', function() {
         allow_tags_direct: { '.*': '.*' },
         allow_classes_by_tag: { '.*': '.*' }
       }),
-      '<div>txt</div>'
+      '<div class="one">txt</div>'
     );
   });
   

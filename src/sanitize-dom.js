@@ -1,5 +1,4 @@
 /*jshint esversion: 6 */
-
 /*
 sanitize-dom - Recursive sanitizer/filter for WHATWG DOMs.
 
@@ -11,7 +10,6 @@ The above copyright notice and this permission notice shall be included in all c
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
-
 
 /**
  * Implements the WHATWG DOM Document interface.
@@ -208,6 +206,8 @@ function sanitizeDom(
   } else if (mode == 'children'){
     sanitizeChildNodes(node);
   }
+  
+
 
   function compileAndCacheRegex(str) {
     let re = regexps[str];
@@ -252,22 +252,6 @@ function sanitizeDom(
       children.push(child);
     }
     return children; // is not 'live', can be safely iterated
-  }
-  
-  function attributesOf(node) {
-    let attnames = [];
-    for (let i = 0; i < node.attributes.length; i++) {
-      attnames.push(node.attributes[i].name);
-    }
-    return attnames; // is not 'live', can be safely iterated
-  }
-  
-  function classesOf(node) {
-    let classes = [];
-    for (let kls of node.classList) {
-      classes.push(kls);
-    }
-    return classes; // is not 'live', can be safely iterated
   }
   
   function replaceWithNodes(replaceable, replacements) {
@@ -331,23 +315,29 @@ function sanitizeDom(
   }
   
   function filterClassesForNode(nd) {
-    let nodename = nd.nodeName;
-
-    for (let classname of classesOf(nd)) {
+    let classes = [];
+    for (let kls of nd.classList) {
+      classes.push(kls);
+    }
+    
+    for (let classname of classes) {
+      let keep = matchesAny(opts.allow_classes_by_tag, nd.nodeName, classname);
       
-      let keep = matchesAny(opts.allow_classes_by_tag, nodename, classname);
       if (!keep) {
         nd.classList.remove(classname);
         continue;
       }
     }
+    
     if (nd.hasAttribute('class') && nd.classList.length === 0) {
       nd.attributes.removeNamedItem('class');
     }
   }
   
   function filterAttributesForNode(nd) {
-    for (let attname of attributesOf(nd)) {
+    for (let i = 0; i < nd.attributes.length; i++) {
+      let attname = nd.attributes[i].name;
+      if (attname == 'class') continue; // classes are filtered separately
       if (!matchesAny(opts.allow_attributes_by_tag, nd.nodeName, attname)) {
         nd.attributes.removeNamedItem(attname);
         continue;
@@ -457,12 +447,12 @@ function sanitizeDom(
       parent_nodenames.some(pnn => matchesAny(opts.allow_tags_deep, pnn, tagname))
     ) {
       
-      if (!nd.sanitize_skip_filter_attributes) {
-        filterAttributesForNode(nd); 
-      }
-      
       if (!nd.sanitize_skip_filter_classes) {
         filterClassesForNode(nd);
+      }
+      
+      if (!nd.sanitize_skip_filter_attributes) {
+        filterAttributesForNode(nd); 
       }
       
       // -- RECURSION --
@@ -503,4 +493,4 @@ function sanitizeDom(
   }
 }
 
-module.exports = sanitizeDom;
+export default sanitizeDom;

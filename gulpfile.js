@@ -2,6 +2,10 @@
 
 const gulp = require('gulp');
 const showdown = require('showdown');
+const fs = require('fs');
+const rollup = require('rollup');
+const rollup_plugin_babel = require('rollup-plugin-babel');
+
 
 gulp.task('readme', function() {
   const fs = require('fs');
@@ -19,4 +23,37 @@ gulp.task('readme', function() {
   
   // for debugging only
   fs.writeFileSync('README.html', converter.makeHtml(output));
+});
+
+
+
+
+gulp.task('build', function() {
+  rollup.rollup({
+    input: 'src/index.js',
+    plugins: [
+      rollup_plugin_babel({
+        exclude: 'node_modules/**',
+        "presets": [
+          ["latest", {
+            "es2015": {
+              "modules": false
+            }
+          }],
+          ["minify", {
+            "mangle": true
+          }]
+        ],
+        "plugins": ["external-helpers"],
+      })
+    ],
+  })
+  .then(function(bundle) {
+    return bundle.write({
+      format: 'umd',
+      name: 'sanitizeDom',
+      sourcemap: true,
+      file: 'dist/sanitize-dom.umd.min.js'
+    });
+  });
 });
