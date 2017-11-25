@@ -27,7 +27,7 @@ Until ES6 imports are widely supported...
     <script src="./dist/sanitize-dom.umd.min.js"></script>
     <script>
       window.addEventListener("load", function() {
-        var {sanitizeDom, sanitizeNode} = window.sanitizeDom;
+        var {sanitizeNode, sanitizeChildNodes, sanitizeHtml} = window.sanitizeDom;
       });
     </script>
     
