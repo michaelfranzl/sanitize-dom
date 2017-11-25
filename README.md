@@ -8,6 +8,31 @@ This project is similar to [sanitize-html](https://github.com/punkave/sanitize-h
 
 The [test file](tests/test.js) describes usage and features.
 
+ES6 import:
+
+```javascript
+    import {sanitizeNode, sanitizeChildNodes, sanitizeHtml} from 'sanitize-dom';
+```
+
+Until ES6 imports are widely supported...
+
+... import in Node.js:
+
+```javascript
+    const {sanitizeNode, sanitizeChildNodes, sanitizeHtml} = require('./dist/sanitize-dom.umd.min.js');
+```
+    
+... import in browsers:
+
+    <script src="./dist/sanitize-dom.umd.min.js"></script>
+    <script>
+      window.addEventListener("load", function() {
+        var {sanitizeDom, sanitizeNode} = window.sanitizeDom;
+      });
+    </script>
+    
+
+
 Run tests:
 
     npm test

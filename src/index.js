@@ -69,9 +69,9 @@ function sanitizeHtml(doc, html, opts = {}) {
   return childrefs;
 }
 
-export default {
+export {
   sanitizeDom,
   sanitizeNode,
   sanitizeChildNodes,
-  sanitizeHtml,
+  sanitizeHtml
 };
