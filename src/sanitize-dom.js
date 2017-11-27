@@ -240,12 +240,6 @@ function sanitizeDom(
     return getValueRegexsForTagname(obj, tagname).some(rx => val.match(rx) != null);
   }
   
-  function isBlank(node) {
-    return node.childNodes.length == 0 ||
-    node.textContent.length  == 0 ||
-    node.textContent.match(/^\s+$/);
-  }
-  
   function childrenOf(node) {
     let children = [];
     for (let child of node.childNodes) {
@@ -481,7 +475,7 @@ function sanitizeDom(
         opts.remove_empty &&
         nd.nodeType == 1 &&
         !allow_empty_tags.includes(nd.nodeName) &&
-        isBlank(nd)
+        nd.childNodes.length == 0
       ) {
         nd.remove();
       }

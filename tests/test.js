@@ -285,7 +285,7 @@ describe('remove_tags', function() {
 describe('remove_empty', function() {
   it('removes empty nodes', function() {
     assert.equal(
-      sanitizeHtml('<b><b></b></b><b>  </b><b> \n</b><b> \t\r</b>', {
+      sanitizeHtml('<b></b>', {
         remove_empty: true,
         allow_tags_direct: {
           '.*': '.*',
@@ -293,6 +293,29 @@ describe('remove_empty', function() {
       }),
       ''
     );
+  });
+  
+  it('does not remove a node just containing another empty node', function() {
+    // Here we need to create the DOM manually because jsdom doesn't seem to
+    // parse the string '<b><i></i></b>' properly. It says that B has no
+    // child nodes.
+    
+    doc.body.innerHTML='';
+    let b_el = doc.createElement('B');
+    let i_el = doc.createElement('I');
+    let txtnd = doc.createTextNode('');
+    i_el.appendChild(txtnd);
+    b_el.appendChild(i_el);
+    doc.body.appendChild(b_el);
+    
+    sanitizeChildNodes(doc, doc.body, {
+      remove_empty: true,
+      allow_tags_direct: {
+        '.*': '.*',
+      },
+    });
+    
+    assert.equal(doc.body.innerHTML, '<b><i></i></b>');
   });
 });
 
