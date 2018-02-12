@@ -221,7 +221,8 @@ function sanitizeDom(
   function getValuesForTagname(obj, tagname) {
     let tag_rx_strs = Object.getOwnPropertyNames(obj);
     let values = [];
-    for (let tag_rx_str of tag_rx_strs) {
+    //for (let tag_rx_str of tag_rx_strs) {
+    for (let i = 0; i < tag_rx_strs.length; i++) { let tag_rx_str = tag_rx_strs[i];
       let tag_rx = compileAndCacheRegex(tag_rx_str);
       if (tagname.match(tag_rx)) {
         values = values.concat(obj[tag_rx_str]); // works for strings and array of strings!
@@ -242,14 +243,16 @@ function sanitizeDom(
   
   function childrenOf(node) {
     let children = [];
-    for (let child of node.childNodes) {
+    // for (let child of node.childNodes) {
+    for (let i = 0; i < node.childNodes.length; i++) { let child = node.childNodes[i]; 
       children.push(child);
     }
     return children; // is not 'live', can be safely iterated
   }
   
   function replaceWithNodes(replaceable, replacements) {
-    for (let n of replacements) {
+    // for (let n of replacements) {
+    for (let i = 0; i < replacements.length; i++) { let n = replacements[i];
       replaceable.parentNode.insertBefore(n, replaceable);
     }
     replaceable.remove();
@@ -265,7 +268,8 @@ function sanitizeDom(
     }
     
     let replacements = [];
-    for (let filter of filters) {
+    //for (let filter of filters) {
+    for (let i = 0; i < filters.length; i++) { let filter = filters[i];
       
       let result = filter(nd, parents, parent_nodenames);
       if (result === nd) {
@@ -292,7 +296,8 @@ function sanitizeDom(
         removed = true;
       }
       
-      for (let r of replacements) {
+      //for (let r of replacements) {
+      for (let i = 0; i < replacements.length; i++) { let r = replacements[i];
         if (r.nodeName == nd.nodeName) {
           if (typeof r.sanitize_skip_filters == 'undefined') {
             throw new Error(`Prevented possible infinite loop. Filter function '${filter.prototype.constructor.name || 'anonymous'}' has returned a node of type '${r.nodeName}' which has the same nodeName as the original node. This can lead to an infinite loop if the filter always returns the same result. To get rid of this warning, the filter must set the property 'sanitize_skip_filters' on the returned node (evaluating to true or false) to signal if the returned node is to be sanitized again (false) or not (true).`);
@@ -310,11 +315,13 @@ function sanitizeDom(
   
   function filterClassesForNode(nd) {
     let classes = [];
-    for (let kls of nd.classList) {
+    //for (let kls of nd.classList) {
+    for (let i = 0; i < nd.classList.length; i++) { let kls = nd.classList[i];
       classes.push(kls);
     }
     
-    for (let classname of classes) {
+    //for (let classname of classes) {
+    for (let i = 0; i < classes.length; i++) { let classname = classes[i];
       let keep = matchesAny(opts.allow_classes_by_tag, nd.nodeName, classname);
       
       if (!keep) {
@@ -342,7 +349,8 @@ function sanitizeDom(
   function childNodesToFragment(nd) {
     // Make children into siblings by moving.
     var fragment = doc.createDocumentFragment();
-    for (let c of childrenOf(nd)) {
+    //for (let c of childrenOf(nd)) {
+    let children = childrenOf(nd); for (let i = 0; i < children.length; i++) { let c = children[i];
       fragment.appendChild(c);
     }
     return fragment;
@@ -369,7 +377,8 @@ function sanitizeDom(
         tags.includes(nd.nodeName) &&
         tags.includes(nd1.nodeName)
       ) {
-        for (let c of childrenOf(nd1)) {
+        //for (let c of childrenOf(nd1)) {
+        let children = childrenOf(nd1); for (let i = 0; i < children.length; i++) { let c = children[i];
           nd.appendChild(c);
         }
         nd1.remove();
@@ -387,7 +396,8 @@ function sanitizeDom(
         tags.includes(nd2.nodeName)
       ) {
         nd.appendChild(nd1);
-        for (let c of childrenOf(nd2)) {
+        //for (let c of childrenOf(nd2)) {
+        let children = childrenOf(nd2); for (let i = 0; i < children.length; i++) { let c = children[i];
           nd.appendChild(c);
         }
         nd2.remove();
@@ -468,7 +478,8 @@ function sanitizeDom(
   function sanitizeChildNodes(parent) {
     // parent may be BODY or DocumentFragment
     let allow_empty_tags = ['IMG', 'IFRAME', 'HR', 'BR'];
-    for (let nd of childrenOf(parent)) {
+    //for (let nd of childrenOf(parent)) {
+    let children = childrenOf(parent); for (let i = 0; i < children.length; i++) { let nd = children[i];
       sanitizeNode(nd);
 
       if (

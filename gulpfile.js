@@ -42,7 +42,7 @@ gulp.task('build', function() {
             "modules": false
           }],
           ["minify", {
-            "mangle": true
+            "mangle": false // Buggy! If true: 'ReferenceError: children is not defined'
           }]
         ],
         "plugins": ["external-helpers"],

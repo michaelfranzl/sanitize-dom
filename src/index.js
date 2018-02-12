@@ -63,7 +63,8 @@ function sanitizeHtml(doc, html, opts = {}) {
   
   // Return a safely iterable list with references to the nodes.
   let childrefs = [];
-  for (let node of sandboxdom.body.childNodes) {
+  //for (let node of sandboxdom.body.childNodes) {
+  for (let i = 0; i < sandboxdom.body.childNodes.length; i++) { let node = sandboxdom.body.childNodes[i];
     childrefs.push(node);
   }
   return childrefs;
