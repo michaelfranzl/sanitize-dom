@@ -4,8 +4,7 @@
   "description": "Recursive sanitizer/filter for WHATWG DOMs",
   "main": "src/index.js",
   "scripts": {
-    "test": "./node_modules/.bin/mocha ./tests/test.js",
-    "coverage": "./node_modules/.bin/nyc ./node_modules/.bin/mocha ./tests/test.js"
+    "test": "./node_modules/.bin/mocha"
   },
   "repository": {
     "type": "git",
@@ -27,17 +26,17 @@
   },
   "homepage": "https://github.com/michaelfranzl/sanitize-dom",
   "devDependencies": {
-    "babel-core": "^6.26.0",
-    "babel-plugin-external-helpers": "^6.22.0",
-    "babel-preset-env": "^1.6.1",
-    "babel-preset-minify": "^0.2.0",
-    "gulp": "^3.9.1",
-    "jsdoc-to-markdown": "^3.0.2",
-    "jsdom": "^11.3.0",
-    "mocha": "^4.0.1",
-    "nyc": "^11.3.0",
-    "rollup": "^0.51.8",
-    "rollup-plugin-babel": "^3.0.2",
+    "eslint": "^6.8.0",
+    "eslint-config-airbnb-base": "^14.0.0",
+    "eslint-plugin-import": "^2.20.1",
+    "eslint-plugin-mocha": "^6.2.2",
+    "jsdoc-to-markdown": "^5.0.3",
+    "jsdom": "^16.2.1",
+    "mocha": "^7.1.1",
     "showdown": "^1.8.2"
+  },
+  "type": "module",
+  "dependencies": {
+    "assert": "^2.0.0"
   }
 }
