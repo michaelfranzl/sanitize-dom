@@ -24,6 +24,10 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 import childrenOf from './lib/children-of.js';
+import joinSiblings from './lib/join-siblings.js';
+import getValuesForTagname from './lib/get-values-for-tagname.js';
+import matchesAny from './lib/matches-any.js';
+import { filterAttributesForNode, filterClassesForNode } from './lib/attributes.js';
 
 /**
  * Implements the WHATWG DOM Document interface.
@@ -200,14 +204,6 @@ function sanitizeDom(
   childrenOnly = false,
   options = {},
 ) {
-  if (!(doc && typeof doc.createElement === 'function')) { // simple interface check
-    throw new Error('Need DOM Document interface (function createElement missing)');
-  }
-
-  if (!(rootNode && typeof rootNode.normalize === 'function')) { // simple interface check
-    throw new Error('Need DOM Node interface (function normalize missing)');
-  }
-
   const optionDefaults = {
     filters_by_tag: {},
     remove_tags_direct: {},
@@ -226,58 +222,6 @@ function sanitizeDom(
 
   const parents = [];
   const parentNodenames = [];
-  const regularExpressionCache = {};
-
-  parents.unshift(rootNode);
-  parentNodenames.unshift(rootNode.nodeName);
-  if (childrenOnly === true) {
-    sanitizeChildNodes(rootNode);
-  } else {
-    sanitizeNode(rootNode);
-  }
-
-  function compileAndCacheRegex(str) {
-    let re = regularExpressionCache[str];
-    if (!re) {
-      re = new RegExp(`^${str}$`, 'g');
-      regularExpressionCache[str] = re;
-    }
-    return re;
-  }
-
-  function getValuesForTagname(obj, tagname) {
-    const tagRegexStrings = Object.getOwnPropertyNames(obj);
-    let values = [];
-    for (let i = 0; i < tagRegexStrings.length; i += 1) {
-      const tagRegexString = tagRegexStrings[i];
-      const tagRegex = compileAndCacheRegex(tagRegexString);
-      if (tagname.match(tagRegex)) values = values.concat(obj[tagRegexString]);
-    }
-    return values;
-  }
-
-  function getValueRegexsForTagname(obj, tagname) {
-    const regexStrings = getValuesForTagname(obj, tagname);
-    const regexes = regexStrings.map((regexString) => compileAndCacheRegex(regexString));
-    return regexes;
-  }
-
-  /**
-   * The `tagname` is first matched against the keys of `regexesByTagname`. When a key matches,
-   * its values are compiled to regular expressions. The value to match is then matched against
-   * all regular expressions. If at least one matches, this function returns true.
-   *
-   * @param {Object.<string, string>} regexesByTagname - Keys are compiled to regular expressions
-   * and matched aganst the tagname. Values are compiled to regular expressions and are matched
-   * against the supplied value.
-   * @param {string} tagname
-   * @param {string} value
-   * @return {boolean}
-  */
-  function matchesAny(regexesByTagname, tagname, value) {
-    return getValueRegexsForTagname(regexesByTagname, tagname)
-      .some((regex) => value.match(regex) != null);
-  }
 
   function replaceWithNodes(replaceable, replacements) {
     for (let i = 0; i < replacements.length; i += 1) {
@@ -344,35 +288,7 @@ function sanitizeDom(
     return removed;
   }
 
-  function filterClassesForNode(node) {
-    const classes = [];
-    for (let i = 0; i < node.classList.length; i += 1) {
-      const kls = node.classList[i];
-      classes.push(kls);
-    }
-
-    for (let i = 0; i < classes.length; i += 1) {
-      const classname = classes[i];
-      const keep = matchesAny(opts.allow_classes_by_tag, node.nodeName, classname);
-      if (!keep) node.classList.remove(classname);
-    }
-
-    if (node.hasAttribute('class') && node.classList.length === 0) {
-      node.attributes.removeNamedItem('class');
-    }
-  }
-
-  function filterAttributesForNode(node) {
-    for (let i = 0; i < node.attributes.length; i += 1) {
-      const attname = node.attributes[i].name;
-      if (attname === 'class') continue; // classes are filtered separately
-      if (!matchesAny(opts.allow_attributes_by_tag, node.nodeName, attname)) {
-        node.attributes.removeNamedItem(attname);
-      }
-    }
-  }
-
-  function childNodesToFragment(node) {
+  function moveChildNodesToFragment(node) {
     const fragment = doc.createDocumentFragment();
     const children = childrenOf(node);
     for (let i = 0; i < children.length; i += 1) fragment.appendChild(children[i]);
@@ -381,49 +297,10 @@ function sanitizeDom(
 
   // This 'flattens' a node.
   function childNodesToSanitizedSiblings(node) {
-    const fragment = childNodesToFragment(node);
+    const fragment = moveChildNodesToFragment(node);
     sanitizeChildNodes(fragment);
     node.parentNode.insertBefore(fragment, node);
     node.remove();
-  }
-
-  function joinSiblings(parentNode, joinableTags) {
-    const siblings = childrenOf(parentNode);
-
-    for (let i = 0; i < siblings.length; i += 1) {
-      const node = siblings[i];
-      const neighbour1 = siblings[i + 1];
-      const neighbour2 = siblings[i + 2];
-
-      if (!neighbour1) continue;
-      if (!joinableTags.includes(node.nodeName)) continue;
-
-      let joined = false;
-      if (node.nodeName === neighbour1.nodeName) {
-        const children = childrenOf(neighbour1);
-        for (let j = 0; j < children.length; j += 1) node.appendChild(children[j]);
-        neighbour1.remove();
-        joined = true;
-
-      } else if ( // Look ahead and join when there is just white space in between two nodes.
-        neighbour2
-        && node.nodeName === neighbour2.nodeName
-        && neighbour1.nodeType === 3
-        && neighbour1.textContent.match(/^\s+$/)
-      ) {
-        node.appendChild(neighbour1);
-
-        const children = childrenOf(neighbour2);
-        for (let j = 0; j < children.length; j += 1) node.appendChild(children[j]);
-        neighbour2.remove();
-        joined = true;
-      }
-
-      // Depending on the tags of the now joined child nodes of the first sibling, we still may
-      // end up with two identical tags next to each other. We have to re-start from beginning
-      // until nothing more is joinable.
-      if (joined) joinSiblings(parentNode, joinableTags);
-    }
   }
 
   function sanitizeNode(node) {
@@ -434,12 +311,12 @@ function sanitizeDom(
 
     let tagname = node.nodeName;
 
-    if (node.nodeType == 3) tagname = 'TEXT'; // instead of #text for easier attribute accessors
+    if (node.nodeType === 3) tagname = 'TEXT'; // instead of #text for easier attribute accessors
 
     const filters = getValuesForTagname(opts.filters_by_tag, tagname);
     if (runFiltersOnNode(node, filters)) return; // The node has been removed by a filter.
 
-    if (node.nodeType == 3) return; // Nothing more to do for a plain-text node.
+    if (node.nodeType === 3) return; // Nothing more to do for a plain-text node.
 
     if (
       matchesAny(opts.remove_tags_direct, parents[0].nodeName, tagname)
@@ -461,8 +338,13 @@ function sanitizeDom(
       matchesAny(opts.allow_tags_direct, parents[0].nodeName, tagname)
       || parentNodenames.some((name) => matchesAny(opts.allow_tags_deep, name, tagname))
     ) {
-      if (!node.sanitize_skip_filter_classes) filterClassesForNode(node);
-      if (!node.sanitize_skip_filter_attributes) filterAttributesForNode(node);
+      if (!node.sanitize_skip_filter_classes) {
+        filterClassesForNode(node, opts.allow_classes_by_tag);
+      }
+
+      if (!node.sanitize_skip_filter_attributes) {
+        filterAttributesForNode(node, opts.allow_attributes_by_tag);
+      }
 
       parents.unshift(node);
       parentNodenames.unshift(node.nodeName);
@@ -495,6 +377,23 @@ function sanitizeDom(
 
     if (opts.join_siblings.length > 0) joinSiblings(parent, opts.join_siblings);
   }
+
+  if (!(doc && typeof doc.createElement === 'function')) { // simple interface check
+    throw new Error('Need DOM Document interface (function createElement missing)');
+  }
+
+  if (!(rootNode && typeof rootNode.normalize === 'function')) { // simple interface check
+    throw new Error('Need DOM Node interface (function normalize missing)');
+  }
+
+  parents.unshift(rootNode);
+  parentNodenames.unshift(rootNode.nodeName);
+  if (childrenOnly === true) {
+    sanitizeChildNodes(rootNode);
+  } else {
+    sanitizeNode(rootNode);
+  }
+
 }
 
 export default sanitizeDom;
