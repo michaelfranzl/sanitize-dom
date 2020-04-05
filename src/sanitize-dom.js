@@ -27,6 +27,7 @@ import childrenOf from './lib/children-of.js';
 import joinSiblings from './lib/join-siblings.js';
 import getValuesForTagname from './lib/get-values-for-tagname.js';
 import matchesAny from './lib/matches-any.js';
+import precompileOptions from './lib/options.js';
 import { filterAttributesForNode, filterClassesForNode } from './lib/attributes.js';
 
 /**
@@ -218,7 +219,7 @@ function sanitizeDom(
     allowed_empty_tags: ['IMG', 'IFRAME', 'HR', 'BR', 'INPUT'],
   };
 
-  const opts = { ...optionDefaults, ...options };
+  const opts = precompileOptions({ ...optionDefaults, ...options });
 
   const parents = [];
   const parentNodenames = [];

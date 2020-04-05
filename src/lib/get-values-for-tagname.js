@@ -1,13 +1,12 @@
-import compileRegex from './regex.js';
-
-function getValuesForTagname(obj, tagname) {
-  const tagRegexStrings = Object.getOwnPropertyNames(obj);
+/**
+ * @param {Map} valuesByTagRegex
+ * @param {string} tagname
+*/
+function getValuesForTagname(valuesByTagRegex, tagname) {
   let values = [];
-  for (let i = 0; i < tagRegexStrings.length; i += 1) {
-    const tagRegexString = tagRegexStrings[i];
-    const tagRegex = compileRegex(tagRegexString);
-    if (tagname.match(tagRegex)) values = values.concat(obj[tagRegexString]);
-  }
+  valuesByTagRegex.forEach((value, key) => {
+    if (tagname.match(key)) values = values.concat(value);
+  });
   return values;
 }
 

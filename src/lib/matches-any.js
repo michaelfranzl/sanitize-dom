@@ -1,11 +1,4 @@
 import getValuesForTagname from './get-values-for-tagname.js';
-import compileRegex from './regex.js';
-
-function getValueRegexsForTagname(obj, tagname) {
-  const regexStrings = getValuesForTagname(obj, tagname);
-  const regexes = regexStrings.map((regexString) => compileRegex(regexString));
-  return regexes;
-}
 
 /**
  * The `tagname` is first matched against the keys of `regexesByTagname`. When a key matches,
@@ -20,7 +13,7 @@ function getValueRegexsForTagname(obj, tagname) {
  * @return {boolean}
 */
 function matchesAny(regexesByTagname, tagname, value) {
-  return getValueRegexsForTagname(regexesByTagname, tagname)
+  return getValuesForTagname(regexesByTagname, tagname)
     .some((regex) => value.match(regex) != null);
 }
 
