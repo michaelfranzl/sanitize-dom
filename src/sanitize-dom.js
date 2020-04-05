@@ -225,10 +225,7 @@ function sanitizeDom(
   const parentNodenames = [];
 
   function replaceWithNodes(replaceable, replacements) {
-    for (let i = 0; i < replacements.length; i += 1) {
-      const n = replacements[i];
-      replaceable.parentNode.insertBefore(n, replaceable);
-    }
+    replacements.forEach((node) => replaceable.parentNode.insertBefore(node, replaceable));
     replaceable.remove();
   }
 
@@ -266,38 +263,36 @@ function sanitizeDom(
         removed = true;
       }
 
-      for (let j = 0; j < replacements.length; j += 1) {
-        const r = replacements[j];
-        if (r.nodeName === node.nodeName) {
-          if (typeof r.sanitize_skip_filters === 'undefined') {
-            const filterFunctionName = filter.prototype.constructor.name || 'anonymous';
-            throw new Error(
-              `Prevented possible infinite loop. Filter function
-              '${filterFunctionName}' has returned a node of type
-              '${r.nodeName}' which has the same nodeName as the original node. This can lead to an
-              infinite loop if the filter always returns the same result. To get rid of this
-              warning, the filter must set the property 'sanitize_skip_filters' on the returned node
-              (evaluating to true or false) to signal if the returned node is to be sanitized again
-              (false) or not (true).`,
-            );
-          }
+      replacements.forEach((r) => {
+        if (r.nodeName === node.nodeName && typeof r.sanitize_skip_filters === 'undefined') {
+          const filterFunctionName = filter.prototype.constructor.name || 'anonymous';
+          throw new Error(
+            `Prevented possible infinite loop. Filter function
+            '${filterFunctionName}' has returned a node of type
+            '${r.nodeName}' which has the same nodeName as the original node. This can lead to an
+            infinite loop if the filter always returns the same result. To get rid of this
+            warning, the filter must set the property 'sanitize_skip_filters' on the returned node
+            (evaluating to true or false) to signal if the returned node is to be sanitized again
+            (false) or not (true).`,
+          );
         }
         sanitizeNode(r);
-      }
-      break;
+      });
+
+      break; // The original has either been replaced or removed. Don't run more filters on it.
     }
     return removed;
   }
 
-  function moveChildNodesToFragment(node) {
-    const fragment = doc.createDocumentFragment();
-    const children = childrenOf(node);
-    for (let i = 0; i < children.length; i += 1) fragment.appendChild(children[i]);
-    return fragment;
-  }
-
   // This 'flattens' a node.
   function childNodesToSanitizedSiblings(node) {
+    function moveChildNodesToFragment(node) {
+      const fragment = doc.createDocumentFragment();
+      const children = childrenOf(node);
+      for (let i = 0; i < children.length; i += 1) fragment.appendChild(children[i]);
+      return fragment;
+    }
+
     const fragment = moveChildNodesToFragment(node);
     sanitizeChildNodes(fragment);
     node.parentNode.insertBefore(fragment, node);
