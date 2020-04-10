@@ -52,6 +52,8 @@ import { filterAttributesForNode, filterClassesForNode } from './lib/attributes.
  * @typedef {Object} DomNode
  * @property {boolean} sanitize_skip_filters If truthy, disables all filters for this node.
  * @property {boolean} sanitize_skip If truthy, disables all processing of this node.
+ * @property {boolean} sanitize_skip_filter_classes If truthy, disables filtering classes of this node.
+ * @property {boolean} sanitize_skip_filter_attributes If truthy, disables filtering attributes of this node.
  */
 
 /**
@@ -127,7 +129,7 @@ import { filterAttributesForNode, filterClassesForNode } from './lib/attributes.
 /**
  * Filter functions can either...
  *
- * 1. optionally modify `node` and return it again,
+ * 1. modify (or not) `node` and return it again,
  * 2. return a single, or an Array of, newly created {@link DomNode}(s), in which case `node` is
  * replaced with the new node(s),
  * 3. return `null`, in which case `node` is removed.
