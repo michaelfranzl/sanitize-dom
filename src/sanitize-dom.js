@@ -50,10 +50,10 @@ import { filterAttributesForNode, filterClassesForNode } from './lib/attributes.
  *
  * @see {@link https://dom.spec.whatwg.org/#interface-node}
  * @typedef {Object} DomNode
- * @property {boolean} sanitize_skip_filters If truthy, disables all filters for this node.
- * @property {boolean} sanitize_skip If truthy, disables all processing of this node.
- * @property {boolean} sanitize_skip_filter_classes If truthy, disables filtering classes of this node.
- * @property {boolean} sanitize_skip_filter_attributes If truthy, disables filtering attributes of this node.
+ * @property {boolean} skip_filters If truthy, disables all filters for this node.
+ * @property {boolean} skip If truthy, disables all processing of this node.
+ * @property {boolean} skip_classes If truthy, disables processing classes of this node.
+ * @property {boolean} skip_attributes If truthy, disables processing attributes of this node.
  */
 
 /**
@@ -173,6 +173,7 @@ import { filterAttributesForNode, filterClassesForNode } from './lib/attributes.
  *
  * @param {DomDocument} doc The document
  * @param {DomNode} rootNode - The root node
+ * @param {WeakMap} nodePropertyMap - To store properties for nodes
  * @param {Bool} [childrenObly=false] - If false, then the node itself and its descendants are
  * processed recursively. If true, then only the children and its descendants are processed
  * recursively, but not the node itself (use when `node` is `BODY` or `DocumentFragment`).
@@ -204,6 +205,7 @@ import { filterAttributesForNode, filterClassesForNode } from './lib/attributes.
 function sanitizeDom(
   doc,
   rootNode,
+  nodePropertyMap,
   childrenOnly = false,
   options = {},
 ) {
@@ -232,10 +234,10 @@ function sanitizeDom(
   }
 
   function runFiltersOnNode(node, filters) {
+    let nodeProperties = nodePropertyMap.get(node);
     let skipFilters;
-
-    skipFilters = node.sanitize_skip_filters; // TODO: underline property?
-    delete node.sanitize_skip_filters;
+    skipFilters = nodeProperties && nodeProperties.skip_filters;
+    if (nodeProperties) delete nodeProperties.skip_filters;
     if (skipFilters) return false;
 
     let replacements = [];
@@ -245,8 +247,9 @@ function sanitizeDom(
 
       const result = filter(node, parents, parentNodenames);
       if (result === node) {
-        skipFilters = node.sanitize_skip_filters; // TODO: underline property?
-        delete node.sanitize_skip_filters;
+        nodeProperties = nodePropertyMap.get(node); // TODO: Why is this not live?
+        skipFilters = nodeProperties && nodeProperties.skip_filters;
+        if (nodeProperties) delete nodeProperties.skip_filters;
         if (skipFilters) {
           break;
         } else {
@@ -266,14 +269,15 @@ function sanitizeDom(
       }
 
       replacements.forEach((r) => {
-        if (r.nodeName === node.nodeName && typeof r.sanitize_skip_filters === 'undefined') {
+        const props = nodePropertyMap.get(r);
+        if (r.nodeName === node.nodeName && !(props && typeof props.skip_filters !== 'undefined')) {
           const filterFunctionName = filter.prototype.constructor.name || 'anonymous';
           throw new Error(
             `Prevented possible infinite loop. Filter function
             '${filterFunctionName}' has returned a node of type
             '${r.nodeName}' which has the same nodeName as the original node. This can lead to an
             infinite loop if the filter always returns the same result. To get rid of this
-            warning, the filter must set the property 'sanitize_skip_filters' on the returned node
+            warning, the filter must set the node attribute 'skip_filters' on the returned node
             (evaluating to true or false) to signal if the returned node is to be sanitized again
             (false) or not (true).`,
           );
@@ -301,9 +305,11 @@ function sanitizeDom(
     node.remove();
   }
 
-  function sanitizeNode(node) {
-    if (node.sanitize_skip) {
-      delete node.sanitize_skip;
+  function sanitizeNode(node) { // TODO: This is not tested?
+    const nodeProperties = nodePropertyMap.get(node);
+
+    if (nodeProperties && nodeProperties.skip) {
+      delete nodeProperties.skip;
       return;
     }
 
@@ -336,11 +342,11 @@ function sanitizeDom(
       matchesAny(opts.allow_tags_direct, parents[0].nodeName, tagname)
       || parentNodenames.some((name) => matchesAny(opts.allow_tags_deep, name, tagname))
     ) {
-      if (!node.sanitize_skip_filter_classes) {
+      if (!(nodeProperties && nodeProperties.skip_classes)) {
         filterClassesForNode(node, opts.allow_classes_by_tag);
       }
 
-      if (!node.sanitize_skip_filter_attributes) {
+      if (!(nodeProperties && nodeProperties.skip_attributes)) {
         filterAttributesForNode(node, opts.allow_attributes_by_tag);
       }
 

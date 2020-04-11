@@ -9,10 +9,11 @@ import { sanitizeChildNodes } from '../src/index.js';
 const { JSDOM } = jsdom;
 const dom = new JSDOM();
 const doc = dom.window.document;
+const nodePropertyMap = new WeakMap();
 
 function sanitizeHtml(html, opts = {}) {
   doc.body.innerHTML = html;
-  sanitizeChildNodes(doc, doc.body, opts);
+  sanitizeChildNodes(doc, doc.body, nodePropertyMap, opts);
   return doc.body.innerHTML;
 }
 
@@ -22,18 +23,18 @@ describe('initialization', () => {
       (function () {
         return function () {
           const node = doc.createElement('div');
-          sanitizeChildNodes({}, node);
+          sanitizeChildNodes({}, node, nodePropertyMap);
         };
       }()), /Need DOM Document interface/,
     );
   });
 
-  it('throws when no node passed in', () => {
+  it('throws when node of wrong interface passed in', () => {
     assert.throws(
       (function () {
         return function () {
           doc.createElement('div');
-          sanitizeChildNodes(doc, {});
+          sanitizeChildNodes(doc, {}, nodePropertyMap);
         };
       }()), /Need DOM Node interface/,
     );
@@ -295,7 +296,7 @@ describe('remove_empty', () => {
     boldElement.appendChild(italicElement);
     doc.body.appendChild(boldElement);
 
-    sanitizeChildNodes(doc, doc.body, {
+    sanitizeChildNodes(doc, doc.body, nodePropertyMap, {
       remove_empty: true,
       allow_tags_direct: {
         '.*': '.*',
@@ -330,7 +331,7 @@ describe('filters', () => {
                 const txtBefore = content.substring(lastIndex, match.index);
                 if (txtBefore) {
                   const tn1 = doc.createTextNode(txtBefore);
-                  tn1.sanitize_skip_filters = false;
+                  nodePropertyMap.set(tn1, { skip_filters: false });
                   elems.push(tn1);
                 }
                 // const emojichar = match[0];
@@ -348,7 +349,7 @@ describe('filters', () => {
                 if (rest) {
                 // console.log('emoji rest', rest);
                   const tn2 = doc.createTextNode(rest);
-                  tn2.sanitize_skip_filters = false;
+                  nodePropertyMap.set(tn2, { skip_filters: false });
                   elems.push(tn2);
                 }
                 return elems;
@@ -448,7 +449,7 @@ describe('filters', () => {
   });
 
 
-  it("throws when a filter returns the same node type but doesn't set the property 'sanitize_skip_filters'", () => {
+  it("throws when a filter returns the same node type but doesn't set the property 'skip_filters'", () => {
     assert.throws(
       (function () {
         return function () {
@@ -472,7 +473,7 @@ describe('filters', () => {
     );
   });
 
-  it("prevents an infinite loop by setting sanitize_skip_filters'", () => {
+  it('prevents an infinite loop by setting skip_filters', () => {
     assert.equal(
       sanitizeHtml('<p>Paragraph</p>', {
         allow_tags_direct: {
@@ -483,7 +484,7 @@ describe('filters', () => {
             function replaceWithAnotherP() {
               const par = doc.createElement('P');
               par.innerHTML = 'txt';
-              par.sanitize_skip_filters = true;
+              nodePropertyMap.set(par, { skip_filters: true });
               return par;
             },
           ],
@@ -503,9 +504,7 @@ describe('filters', () => {
         filters_by_tag: {
           SPAN: [
             function maybeSkipLaterFilters(node) {
-              if (node.className.includes('precious')) {
-                node.sanitize_skip_filters = true;
-              }
+              if (node.className.includes('precious')) nodePropertyMap.set(node, { skip_filters: true });
               return node;
             },
             function replaceFooWithBar(node) {
@@ -519,12 +518,12 @@ describe('filters', () => {
     );
   });
 
-  it('skips filtering nodes with sanitize_skip_filters property, set before sanitization', () => {
+  it('skips filtering nodes with skip_filters property, set before sanitization', () => {
     doc.body.innerHTML = '<p><span>foo</span><span>foo</span></p>';
     const firstspan = doc.body.getElementsByTagName('span')[0];
-    firstspan.sanitize_skip_filters = true;
+    nodePropertyMap.set(firstspan, { skip_filters: true });
 
-    sanitizeChildNodes(doc, doc.body, {
+    sanitizeChildNodes(doc, doc.body, nodePropertyMap, {
       allow_tags_direct: {
         '.*': '.*',
       },
@@ -544,12 +543,12 @@ describe('filters', () => {
     );
   });
 
-  it('removes sanitize_skip_filters property', () => {
+  it('removes skip_filters property', () => {
     doc.body.innerHTML = '<p><span>foo</span><span>foo</span></p>';
     const firstspan = doc.body.getElementsByTagName('span')[0];
-    firstspan.sanitize_skip_filters = true;
+    nodePropertyMap.set(firstspan, { skip_filters: true });
 
-    sanitizeChildNodes(doc, doc.body, {
+    sanitizeChildNodes(doc, doc.body, nodePropertyMap, {
       allow_tags_direct: {
         '.*': '.*',
       },
@@ -563,7 +562,7 @@ describe('filters', () => {
       },
     });
 
-    sanitizeChildNodes(doc, doc.body, {
+    sanitizeChildNodes(doc, doc.body, nodePropertyMap, {
       allow_tags_direct: {
         '.*': '.*',
       },
@@ -585,13 +584,13 @@ describe('filters', () => {
 });
 
 
-describe('sanitize_skip property', () => {
-  it('skips all sanitization when `sanitize_skip` property present, set before sanitization', () => {
+describe('skip property', () => {
+  it('skips all sanitization when `skip` property present, set before sanitization', () => {
     doc.body.innerHTML = '<p><span>foo</span><span>foo</span></p>';
     const firstspan = doc.body.getElementsByTagName('span')[0];
-    firstspan.sanitize_skip = true;
+    nodePropertyMap.set(firstspan, { skip: true });
 
-    sanitizeChildNodes(doc, doc.body, {
+    sanitizeChildNodes(doc, doc.body, nodePropertyMap, {
       allow_tags_direct: {
         '.*': ['P'],
       },
@@ -603,18 +602,18 @@ describe('sanitize_skip property', () => {
     );
   });
 
-  it('removes `sanitize_skip` property', () => {
+  it('removes `skip` property', () => {
     doc.body.innerHTML = '<p><span>foo</span><span>foo</span></p>';
     const firstspan = doc.body.getElementsByTagName('span')[0];
-    firstspan.sanitize_skip = true;
+    nodePropertyMap.set(firstspan, { skip: true });
 
-    sanitizeChildNodes(doc, doc.body, {
+    sanitizeChildNodes(doc, doc.body, nodePropertyMap, {
       allow_tags_direct: {
         '.*': ['P'],
       },
     });
 
-    sanitizeChildNodes(doc, doc.body, {
+    sanitizeChildNodes(doc, doc.body, nodePropertyMap, {
       allow_tags_direct: {
         '.*': ['P'],
       },

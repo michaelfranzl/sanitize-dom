@@ -30,8 +30,8 @@ import childrenOf from './lib/children-of.js';
  * @param {DomNode} node
  * @param {Object} [opts={}]
  */
-function sanitizeNode(doc, node, opts = {}) {
-  sanitizeDom(doc, node, false, opts);
+function sanitizeNode(doc, node, nodePropertyMap, opts = {}) {
+  sanitizeDom(doc, node, nodePropertyMap, false, opts);
 }
 
 /**
@@ -42,8 +42,8 @@ function sanitizeNode(doc, node, opts = {}) {
  * @param {DomNode} node
  * @param {Object} [opts={}]
  */
-function sanitizeChildNodes(doc, node, opts = {}) {
-  sanitizeDom(doc, node, true, opts);
+function sanitizeChildNodes(doc, node, nodePropertyMap, opts = {}) {
+  sanitizeDom(doc, node, nodePropertyMap, true, opts);
 }
 
 /**
@@ -54,7 +54,7 @@ function sanitizeChildNodes(doc, node, opts = {}) {
  * @param {Object} [opts={}]
  * @returns {DomNode[]} The root nodes of the HTML string after parsing and processing
  */
-function sanitizeHtml(doc, html, opts = {}) {
+function sanitizeHtml(doc, html, nodePropertyMap, opts = {}) {
   if (!(doc && typeof doc.createElement === 'function')) { // simple interface check
     throw new Error('Need DOM Document interface');
   }
@@ -63,7 +63,7 @@ function sanitizeHtml(doc, html, opts = {}) {
   const sandbox = doc.implementation.createHTMLDocument('');
   sandbox.documentElement.innerHTML = html;
 
-  sanitizeDom(doc, sandbox.body, 'children', opts);
+  sanitizeDom(doc, sandbox.body, nodePropertyMap, true, opts);
 
   return childrenOf(sandbox.body);
 }
