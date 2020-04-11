@@ -69,7 +69,6 @@ function sanitizeHtml(doc, html, nodePropertyMap, opts = {}) {
 }
 
 export {
-  sanitizeDom,
   sanitizeNode,
   sanitizeChildNodes,
   sanitizeHtml,
