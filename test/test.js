@@ -391,8 +391,8 @@ describe('filters', () => {
         },
         filters_by_tag: {
           B: [
-            function changesInnerHtml(node, parents, parentTagnames) {
-              node.innerHTML = parentTagnames.join(', ');
+            function changesInnerHtml(node, { parentNodenames }) {
+              node.innerHTML = parentNodenames.join(', ');
               return node;
             },
           ],
@@ -437,8 +437,8 @@ describe('filters', () => {
             },
           ],
           EM: [
-            function changesInnerHtml(node, parents, parentTagnames) {
-              node.innerHTML = parentTagnames.join('-');
+            function changesInnerHtml(node, { parentNodenames }) {
+              node.innerHTML = parentNodenames.join('-');
               return node;
             },
           ],

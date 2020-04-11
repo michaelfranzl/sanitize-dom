@@ -244,8 +244,10 @@ function sanitizeDom(
     let removed = false;
     for (let i = 0; i < filters.length; i += 1) {
       const filter = filters[i];
-
-      const result = filter(node, parents, parentNodenames);
+      const result = filter(node, {
+        parents,
+        parentNodenames,
+      });
       if (result === node) {
         nodeProperties = nodePropertyMap.get(node); // TODO: Why is this not live?
         skipFilters = nodeProperties && nodeProperties.skip_filters;
