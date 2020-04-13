@@ -35,8 +35,5 @@
     "mocha": "^7.1.1",
     "showdown": "^1.8.2"
   },
-  "type": "module",
-  "dependencies": {
-    "assert": "^2.0.0"
-  }
+  "type": "module"
 }
