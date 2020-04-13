@@ -1,0 +1,5 @@
+{
+  "imports": {
+    "assert": "/jspm_packages/npm/@jspm/core@1.1.0/nodelibs/assert.js"
+  }
+}
