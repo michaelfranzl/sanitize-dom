@@ -644,6 +644,15 @@ function runTests(doc, container) {
         '<div><wiggly worms="ewww" warm="false">hello</wiggly><span>world</span></div>',
       );
     });
+
+    it('removes all attributes', () => {
+      assert.equal(
+        sanitizeHtml('<div aaa="1" bbb="2"></div>', {
+          allow_tags_direct: { '.*': '.*' },
+        }),
+        '<div></div>',
+      );
+    });
   });
 
   describe('allow_classes_by_tag', () => {

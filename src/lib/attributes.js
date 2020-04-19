@@ -19,13 +19,19 @@ function filterClassesForNode(node, allowClassesByTag) {
 }
 
 function filterAttributesForNode(node, allowAttributesByTag) {
-  for (let i = 0; i < node.attributes.length; i += 1) {
-    const attname = node.attributes[i].name;
-    if (attname === 'class') continue; // classes are filtered separately
-    if (!matchesAny(allowAttributesByTag, node.nodeName, attname)) {
-      node.attributes.removeNamedItem(attname);
+  const { attributes } = node;
+  const attributeCount = attributes.length;
+  const attributeNames = [];
+  for (let i = 0; i < attributeCount; i += 1) attributeNames.push(attributes[i].name);
+
+  attributeNames.forEach((attname) => {
+    if (
+      attname !== 'class' // classes are filtered separately
+      && ! matchesAny(allowAttributesByTag, node.nodeName, attname)
+    ) {
+      attributes.removeNamedItem(attname);
     }
-  }
+  });
 }
 
 export { filterAttributesForNode, filterClassesForNode };
