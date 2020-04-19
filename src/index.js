@@ -65,7 +65,7 @@ function sanitizeHtml(doc, html, nodePropertyMap, opts = {}) {
 
   sanitizeDom(doc, sandbox.body, nodePropertyMap, true, opts);
 
-  return childrenOf(sandbox.body);
+  return sandbox.body.innerHTML;
 }
 
 export {
