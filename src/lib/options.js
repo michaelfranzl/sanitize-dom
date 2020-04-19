@@ -1,5 +1,5 @@
 function compileRegex(str) {
-  return new RegExp(`^${str}\$`, 'g');
+  return new RegExp(`^${str}\$`, 'i');
 }
 
 function precompileOptions(options) {
