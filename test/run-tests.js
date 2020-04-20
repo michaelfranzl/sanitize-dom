@@ -40,15 +40,15 @@ function runTests(doc, container) {
 
 
   describe('join_siblings', () => {
-    it('joins same-tag siblings of specified tags', () => {
+    it('joins same-tag siblings of specified tags, keeping children intact', () => {
       assert.equal(
-        sanitizeHtml('<b>abc</b> <b>def <u>ghi</u></b> <i>ghi</i> <i>jkl</i>', {
+        sanitizeHtml('<b>abc</b> <b>def <u>ghi</u></b> <i>jkl</i> <i>mno</i>', {
           join_siblings: ['B'],
           allow_tags_direct: {
             '.*': '.*',
           },
         }),
-        '<b>abc def <u>ghi</u></b> <i>ghi</i> <i>jkl</i>',
+        '<b>abc def <u>ghi</u></b> <i>jkl</i> <i>mno</i>',
       );
     });
 
@@ -67,29 +67,31 @@ function runTests(doc, container) {
 
   it('flattens all tags by default', () => {
     assert.equal(
-      sanitizeHtml('<div><p>Hello <b class="klass">there</b></p></div>'),
-      'Hello there',
+      sanitizeHtml('<div><p>abc <b class="klass">def</b></p></div>'),
+      'abc def',
     );
   });
 
   describe('allow_tags', () => {
-    it('keeps all tags', () => {
+    it('keeps all tags using wildcard tag specifiers', () => {
       assert.equal(
-        sanitizeHtml('<div><p>Hello <b>there</b></p></div>', {
+        sanitizeHtml('<div><p>abc <b>def</b></p></div>', {
           allow_tags_direct: {
             '.*': '.*',
           },
         }),
-        '<div><p>Hello <b>there</b></p></div>',
+        '<div><p>abc <b>def</b></p></div>',
       );
     });
 
     it('respects text nodes at top level', () => {
       assert.equal(
-        sanitizeHtml('Blah blah blah<p>Whee!</p>', {
-          allow_tags_direct: { '.*': '.*' },
+        sanitizeHtml('abc <p>def</p>', {
+          allow_tags_direct: {
+            '.*': '.*'
+          },
         }),
-        'Blah blah blah<p>Whee!</p>',
+        'abc <p>def</p>',
       );
     });
 
@@ -97,35 +99,35 @@ function runTests(doc, container) {
     describe('allow_tags_direct', () => {
       it('keeps only direct children of BODY', () => {
         assert.equal(
-          sanitizeHtml('<i><b>abc</b></i><p>Paragraph <b>flat1</b> <i><b>flat2</b></i></p>', {
+          sanitizeHtml('<i><b>abc</b></i> <p>def <b>ghi</b> <i><b>jkl</b></i></p>', {
             allow_tags_direct: {
               BODY: '.*',
             },
           }),
-          '<i>abc</i><p>Paragraph flat1 flat2</p>',
+          '<i>abc</i> <p>def ghi jkl</p>',
         );
       });
 
       it('keeps I and direct B children of I', () => {
         assert.equal(
-          sanitizeHtml('<i><b>abc</b></i><p>Paragraph <b>def</b> <i><b>ghi</b></i></p>', {
+          sanitizeHtml('<i><b>abc</b></i><p>def <b>ghi</b> <i><b>jkl</b></i></p>', {
             allow_tags_direct: {
               '.*': 'I',
               I: 'B',
             },
           }),
-          '<i><b>abc</b></i>Paragraph def <i><b>ghi</b></i>',
+          '<i><b>abc</b></i>def ghi <i><b>jkl</b></i>',
         );
       });
 
       it('keeps only P, H1 and H2, specified by regexp', () => {
         assert.equal(
-          sanitizeHtml('<h1>Heading1</h1><p><span>Para</span>graph</p><h2>Subheading</h2><p>Paragraph</p><h3>Subsubheading</h3>', {
+          sanitizeHtml('<h1>abc</h1><p><span>def</span>ghi</p><h2>jkl</h2><p>mno</p><h3>pqr</h3>', {
             allow_tags_direct: {
               '.*': ['H[1-2]', 'P'],
             },
           }),
-          '<h1>Heading1</h1><p>Paragraph</p><h2>Subheading</h2><p>Paragraph</p>Subsubheading',
+          '<h1>abc</h1><p>defghi</p><h2>jkl</h2><p>mno</p>pqr',
         );
       });
     });
@@ -134,13 +136,13 @@ function runTests(doc, container) {
     describe('allow_tags_deep', () => {
       it('keeps P and its B and U descendants', () => {
         assert.equal(
-          sanitizeHtml('<i><u>abc</u></i> <p>Paragraph <i><b>ghi</b> <u>jkl</u></i></p>', {
+          sanitizeHtml('<i><u>abc</u></i> <p>def <i><b>ghi</b> <u>jkl</u></i></p>', {
             allow_tags_deep: {
               '.*': 'P',
               P: ['B', 'U'],
             },
           }),
-          'abc <p>Paragraph <b>ghi</b> <u>jkl</u></p>',
+          'abc <p>def <b>ghi</b> <u>jkl</u></p>',
         );
       });
 
@@ -160,7 +162,7 @@ function runTests(doc, container) {
   describe('flatten_tags', () => {
     it('gives flatten_tags_* precedence over allow_tags', () => {
       assert.equal(
-        sanitizeHtml('<b>good</b><p>Paragraph <b>bad</b> <i><b>flat</b></i></p>', {
+        sanitizeHtml('<b>abc</b> <p>def <b>ghi</b> <i><b>jkl</b></i></p>', {
           flatten_tags_deep: {
             '.*': '.*',
           },
@@ -168,13 +170,13 @@ function runTests(doc, container) {
             '.*': '.*',
           },
         }),
-        'goodParagraph bad flat',
+        'abc def ghi jkl',
       );
     });
 
     it('flattens direct B children of P', () => {
       assert.equal(
-        sanitizeHtml('<b>keep</b><p>Paragraph <b>flat</b> <i><b>keep</b></i> <b>flat</b></p>', {
+        sanitizeHtml('<b>abc</b><p>def <b>ghi</b> <i><b>jkl</b></i> <b>mno</b></p>', {
           flatten_tags_direct: {
             P: ['B'],
           },
@@ -182,13 +184,13 @@ function runTests(doc, container) {
             '.*': '.*',
           },
         }),
-        '<b>keep</b><p>Paragraph flat <i><b>keep</b></i> flat</p>',
+        '<b>abc</b><p>def ghi <i><b>jkl</b></i> mno</p>',
       );
     });
 
     it('flattens redundant B', () => {
       assert.equal(
-        sanitizeHtml('<b>bold<i>italic<b>bolditalic</b></i></b>', {
+        sanitizeHtml('<b>abc <i>def <b>ghi</b></i></b>', {
           flatten_tags_deep: {
             B: ['B'],
           },
@@ -196,7 +198,7 @@ function runTests(doc, container) {
             '.*': '.*',
           },
         }),
-        '<b>bold<i>italicbolditalic</i></b>',
+        '<b>abc <i>def ghi</i></b>',
       );
     });
   });
@@ -216,7 +218,7 @@ function runTests(doc, container) {
 
     it('removes direct B children of P', () => {
       assert.equal(
-        sanitizeHtml('<b>keep</b><p>Paragraph <b>remove</b> <i><b>keep</b></i> <b>bold</b></p>', {
+        sanitizeHtml('<b>abc</b> <p>def <b>ghi</b> <i><b>jkl</b></i> <b>mno</b></p>', {
           remove_tags_direct: {
             P: ['B'],
           },
@@ -224,13 +226,13 @@ function runTests(doc, container) {
             '.*': '.*',
           },
         }),
-        '<b>keep</b><p>Paragraph  <i><b>keep</b></i> </p>',
+        '<b>abc</b> <p>def  <i><b>jkl</b></i> </p>',
       );
     });
 
     it('removes deeply nested B children of P, and remove remaining empty I tag', () => {
       assert.equal(
-        sanitizeHtml('<b>keep</b><p>Paragraph <b>remove</b> <i><b>remove</b></i> <b>bold</b></p>', {
+        sanitizeHtml('<b>abc</b> <p>def <b>ghi</b> <i><b>jkl</b></i> <b>mno</b></p>', {
           remove_empty: true,
           remove_tags_deep: {
             P: ['B'],
@@ -239,7 +241,7 @@ function runTests(doc, container) {
             '.*': '.*',
           },
         }),
-        '<b>keep</b><p>Paragraph   </p>',
+        '<b>abc</b> <p>def   </p>',
       );
     });
   });
@@ -344,7 +346,7 @@ function runTests(doc, container) {
 
     it('removes B tag', () => {
       assert.equal(
-        sanitizeHtml('<p>Paragraph <i><b>remove</b></i></p>', {
+        sanitizeHtml('<p>abc <i><b>def</b></i></p>', {
           allow_tags_direct: {
             '.*': '.*',
           },
@@ -354,13 +356,13 @@ function runTests(doc, container) {
             }],
           },
         }),
-        '<p>Paragraph <i></i></p>',
+        '<p>abc <i></i></p>',
       );
     });
 
     it('modifies B tag to have a different innerText', () => {
       assert.equal(
-        sanitizeHtml('<p>Paragraph <i><b>bold</b></i></p>', {
+        sanitizeHtml('<p>abc <i><b>def</b></i></p>', {
           allow_tags_direct: {
             '.*': '.*',
           },
@@ -373,13 +375,13 @@ function runTests(doc, container) {
             ],
           },
         }),
-        '<p>Paragraph <i><b>I, P, BODY</b></i></p>',
+        '<p>abc <i><b>I, P, BODY</b></i></p>',
       );
     });
 
     it('changes B tag to EM tag', () => {
       assert.equal(
-        sanitizeHtml('<p>Paragraph <i><b>bold</b></i></p>', {
+        sanitizeHtml('<p>abc <i><b>def</b></i></p>', {
           allow_tags_direct: {
             '.*': '.*',
           },
@@ -387,19 +389,19 @@ function runTests(doc, container) {
             B: [
               function changesToEm() {
                 const em = doc.createElement('em');
-                em.innerHTML = 'changed';
+                em.innerHTML = 'ghi';
                 return em;
               },
             ],
           },
         }),
-        '<p>Paragraph <i><em>changed</em></i></p>',
+        '<p>abc <i><em>ghi</em></i></p>',
       );
     });
 
     it('changes B tag to EM tag, then modifies EM tag', () => {
       assert.equal(
-        sanitizeHtml('<p>Paragraph <i><b>bold</b></i></p>', {
+        sanitizeHtml('<p>abc <i><b>def</b></i></p>', {
           allow_tags_direct: {
             '.*': '.*',
           },
@@ -419,7 +421,7 @@ function runTests(doc, container) {
             ],
           },
         }),
-        '<p>Paragraph <i><em>I-P-BODY</em></i></p>',
+        '<p>abc <i><em>I-P-BODY</em></i></p>',
       );
     });
 
@@ -472,14 +474,14 @@ function runTests(doc, container) {
 
     it('skips later filters', () => {
       assert.equal(
-        sanitizeHtml('<p><span class="precious">foo</span><span>foo</span></p>', {
+        sanitizeHtml('<p><span class="a">foo</span><span>abc</span></p>', {
           allow_tags_direct: {
             '.*': '.*',
           },
           filters_by_tag: {
             SPAN: [
               function maybeSkipLaterFilters(node) {
-                if (node.className.includes('precious')) nodePropertyMap.set(node, { skip_filters: true });
+                if (node.className.includes('a')) nodePropertyMap.set(node, { skip_filters: true });
                 return node;
               },
               function replaceFooWithBar(node) {
@@ -489,11 +491,11 @@ function runTests(doc, container) {
             ],
           },
         }),
-        '<p><span>foo</span><span>bar</span></p>',
+        '<p><span>foo</span><span>abc</span></p>',
       );
     });
 
-    it('skips filtering nodes with skip_filters property, set before sanitization', () => {
+    it('skips filtering nodes with skip_filters property, set before processing', () => {
       container.innerHTML = '<p><span>foo</span><span>foo</span></p>';
       const firstspan = container.getElementsByTagName('span')[0];
       nodePropertyMap.set(firstspan, { skip_filters: true });
@@ -593,21 +595,21 @@ function runTests(doc, container) {
   describe('allow_attributes_by_tag', () => {
     it('keeps all attributes', () => {
       assert.equal(
-        sanitizeHtml('<div><wiggly worms="ewww">hello</wiggly></div>', {
+        sanitizeHtml('<div><span abc="def">ghi</span></div>', {
           allow_tags_direct: { '.*': '.*' },
           allow_attributes_by_tag: { '.*': '.*' },
         }),
-        '<div><wiggly worms="ewww">hello</wiggly></div>',
+        '<div><span abc="def">ghi</span></div>',
       );
     });
 
     it('keeps only allowed attributes, using regex', () => {
       assert.equal(
-        sanitizeHtml('<div><wiggly worms="ewww" warm="false">hello</wiggly><span worms="eww">world</span></div>', {
+        sanitizeHtml('<div><span hello="abc" hi="def" ghi="jkl">mno</span></div>', {
           allow_tags_direct: { '.*': '.*' },
-          allow_attributes_by_tag: { 'WIGG.*': 'w[oa]rms*' },
+          allow_attributes_by_tag: { 's.*': 'h.*' },
         }),
-        '<div><wiggly worms="ewww" warm="false">hello</wiggly><span>world</span></div>',
+        '<div><span hello="abc" hi="def">mno</span></div>',
       );
     });
 
