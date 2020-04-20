@@ -20,7 +20,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 import sanitizeDom from './sanitize-dom.js';
-import childrenOf from './lib/children-of.js';
+import childrenSnapshot from './lib/children-snapshot.js';
 
 /**
  * Simple wrapper for {@link sanitizeDom} but sets `childrenOnly` to `false`, thus processes

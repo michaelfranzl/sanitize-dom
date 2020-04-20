@@ -23,7 +23,7 @@ OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-import childrenOf from './lib/children-of.js';
+import childrenSnapshot from './lib/children-snapshot.js';
 import joinSiblings from './lib/join-siblings.js';
 import getValuesForTagname from './lib/get-values-for-tagname.js';
 import matchesAny from './lib/matches-any.js';
@@ -172,7 +172,7 @@ import { filterAttributesForNode, filterClassesForNode } from './lib/attributes.
  * 5. The node is flattened.
  *
  * @param {DomDocument} doc The document
- * @param {DomNode} rootNode - The root node
+ * @param {DomNode} contextNode - The root node
  * @param {WeakMap} nodePropertyMap - To store properties for nodes
  * @param {Bool} [childrenObly=false] - If false, then the node itself and its descendants are
  * processed recursively. If true, then only the children and its descendants are processed
@@ -204,7 +204,7 @@ import { filterAttributesForNode, filterClassesForNode } from './lib/attributes.
 */
 function sanitizeDom(
   doc,
-  rootNode,
+  contextNode,
   nodePropertyMap,
   childrenOnly = false,
   options = {},
@@ -297,7 +297,7 @@ function sanitizeDom(
   function childNodesToSanitizedSiblings(node) {
     function moveChildNodesToFragment(nd) {
       const fragment = doc.createDocumentFragment();
-      const children = childrenOf(nd);
+      const children = childrenSnapshot(nd);
       for (let i = 0; i < children.length; i += 1) fragment.appendChild(children[i]);
       return fragment;
     }
@@ -358,16 +358,14 @@ function sanitizeDom(
       sanitizeChildNodes(node);
       parents.shift();
       parentNodenames.shift();
-
       return;
     }
 
-    // If nothing else handled this node, flatten it.
     childNodesToSanitizedSiblings(node);
   }
 
   function sanitizeChildNodes(parent) {
-    const children = childrenOf(parent);
+    const children = childrenSnapshot(parent);
     for (let i = 0; i < children.length; i += 1) {
       const node = children[i];
       sanitizeNode(node, i);
@@ -389,16 +387,16 @@ function sanitizeDom(
     throw new Error('Need DOM Document interface (function createElement missing)');
   }
 
-  if (!(rootNode && typeof rootNode.normalize === 'function')) { // simple interface check
+  if (!(contextNode && typeof contextNode.normalize === 'function')) { // simple interface check
     throw new Error('Need DOM Node interface (function normalize missing)');
   }
 
-  parents.unshift(rootNode);
-  parentNodenames.unshift(rootNode.nodeName);
+  parents.unshift(contextNode);
+  parentNodenames.unshift(contextNode.nodeName);
   if (childrenOnly === true) {
-    sanitizeChildNodes(rootNode);
+    sanitizeChildNodes(contextNode);
   } else {
-    sanitizeNode(rootNode);
+    sanitizeNode(contextNode);
   }
 
 }

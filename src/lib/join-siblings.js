@@ -1,7 +1,7 @@
-import childrenOf from './children-of.js';
+import childrenSnapshot from './children-snapshot.js';
 
 function joinSiblings(parentNode, joinableTags) {
-  const siblings = childrenOf(parentNode);
+  const siblings = childrenSnapshot(parentNode);
 
   for (let i = 0; i < siblings.length; i += 1) {
     const node = siblings[i];
@@ -13,7 +13,7 @@ function joinSiblings(parentNode, joinableTags) {
 
     let joined = false;
     if (node.nodeName === neighbour1.nodeName) {
-      const children = childrenOf(neighbour1);
+      const children = childrenSnapshot(neighbour1);
       for (let j = 0; j < children.length; j += 1) node.appendChild(children[j]);
       neighbour1.remove();
       joined = true;
@@ -26,7 +26,7 @@ function joinSiblings(parentNode, joinableTags) {
     ) {
       node.appendChild(neighbour1);
 
-      const children = childrenOf(neighbour2);
+      const children = childrenSnapshot(neighbour2);
       for (let j = 0; j < children.length; j += 1) node.appendChild(children[j]);
       neighbour2.remove();
       joined = true;
