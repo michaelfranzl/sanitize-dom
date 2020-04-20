@@ -212,7 +212,7 @@ function sanitizeDom(
   const optionDefaults = {
     filters_by_tag: {},
     remove_tags_direct: {},
-    remove_tags_deep: { '.*': ['style', 'script', 'textarea', 'noscript'] },
+    remove_tags_deep: {},
     flatten_tags_direct: {},
     flatten_tags_deep: {},
     allow_tags_direct: {},
