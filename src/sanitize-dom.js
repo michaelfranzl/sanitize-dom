@@ -233,7 +233,7 @@ function sanitizeDom(
     replaceable.remove();
   }
 
-  function runFiltersOnNode(node, filters) {
+  function runFiltersOnNode(node, filters, siblingIndex) {
     let nodeProperties = nodePropertyMap.get(node);
     let skipFilters;
     skipFilters = nodeProperties && nodeProperties.skip_filters;
@@ -247,6 +247,7 @@ function sanitizeDom(
       const result = filter(node, {
         parents,
         parentNodenames,
+        siblingIndex
       });
       if (result === node) {
         nodeProperties = nodePropertyMap.get(node); // TODO: Why is this not live?
@@ -270,7 +271,7 @@ function sanitizeDom(
         removed = true;
       }
 
-      replacements.forEach((r) => {
+      replacements.forEach((r, index) => {
         const props = nodePropertyMap.get(r);
         if (r.nodeName === node.nodeName && !(props && typeof props.skip_filters !== 'undefined')) {
           const filterFunctionName = filter.prototype.constructor.name || 'anonymous';
@@ -284,7 +285,7 @@ function sanitizeDom(
             (false) or not (true).`,
           );
         }
-        sanitizeNode(r);
+        sanitizeNode(r, index);
       });
 
       break; // The original has either been replaced or removed. Don't run more filters on it.
@@ -307,7 +308,7 @@ function sanitizeDom(
     node.remove();
   }
 
-  function sanitizeNode(node) { // TODO: This is not tested?
+  function sanitizeNode(node, index = 0) {
     const nodeProperties = nodePropertyMap.get(node);
 
     if (nodeProperties && nodeProperties.skip) {
@@ -320,7 +321,7 @@ function sanitizeDom(
     if (node.nodeType === 3) tagname = 'TEXT'; // instead of #text for easier attribute accessors
 
     const filters = getValuesForTagname(opts.filters_by_tag, tagname);
-    if (runFiltersOnNode(node, filters)) return; // The node has been removed by a filter.
+    if (runFiltersOnNode(node, filters, index)) return; // The node has been removed by a filter.
 
     if (node.nodeType === 3) return; // Nothing more to do for a plain-text node.
 
@@ -369,7 +370,7 @@ function sanitizeDom(
     const children = childrenOf(parent);
     for (let i = 0; i < children.length; i += 1) {
       const node = children[i];
-      sanitizeNode(node);
+      sanitizeNode(node, i);
 
       if (
         opts.remove_empty

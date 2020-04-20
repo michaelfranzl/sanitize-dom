@@ -345,6 +345,39 @@ function runTests(doc, container) {
       );
     });
 
+    it('passes a list of parents to the filter', () => {
+      sanitizeHtml('<p>abc <i><b>def</b></i></p>', {
+        allow_tags_direct: {
+          '.*': '.*',
+        },
+        filters_by_tag: {
+          B: [function (node, { parents }) {
+            assert.equal(parents[0].nodeName, 'I');
+            assert.equal(parents[1].nodeName, 'P');
+          }],
+        },
+      });
+    });
+
+    it('passes the current sibling index to the filter', () => {
+      sanitizeHtml('<p><b>abc</b><i>def</i><u>jkl</u></p>', {
+        allow_tags_direct: {
+          '.*': '.*',
+        },
+        filters_by_tag: {
+          B: [function (node, { siblingIndex }) {
+            assert.equal(siblingIndex, 0);
+          }],
+          I: [function (node, { siblingIndex }) {
+            assert.equal(siblingIndex, 1);
+          }],
+          U: [function (node, { siblingIndex }) {
+            assert.equal(siblingIndex, 2);
+          }],
+        },
+      });
+    });
+
     it('removes B tag', () => {
       assert.equal(
         sanitizeHtml('<p>abc <i><b>def</b></i></p>', {
