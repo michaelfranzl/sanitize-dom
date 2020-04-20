@@ -1,4 +1,5 @@
 /* eslint-disable prefer-arrow-callback, func-names */
+/* eslint no-param-reassign: ["error", { "props": true, "ignorePropertyModificationsFor": ["node", "container"] }] */
 
 import assert from 'assert';
 
@@ -88,7 +89,7 @@ function runTests(doc, container) {
       assert.equal(
         sanitizeHtml('abc <p>def</p>', {
           allow_tags_direct: {
-            '.*': '.*'
+            '.*': '.*',
           },
         }),
         'abc <p>def</p>',
@@ -153,7 +154,7 @@ function runTests(doc, container) {
               '.*': '(I|B)',
             },
           }),
-          '<i>abc</i> <b>def</b>'
+          '<i>abc</i> <b>def</b>',
         );
       });
     });
