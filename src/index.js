@@ -29,9 +29,10 @@ import childrenSnapshot from './lib/children-snapshot.js';
  * @param {DomDocument} doc
  * @param {DomNode} node
  * @param {Object} [opts={}]
+ * @param {WeakMap} [nodePropertyMap=new WeakMap()]
  */
-function sanitizeNode(doc, node, nodePropertyMap, opts = {}) {
-  sanitizeDom(doc, node, nodePropertyMap, false, opts);
+function sanitizeNode(doc, node, opts = {}, nodePropertyMap = new WeakMap()) {
+  sanitizeDom(doc, node, opts, false, nodePropertyMap);
 }
 
 /**
@@ -41,9 +42,10 @@ function sanitizeNode(doc, node, nodePropertyMap, opts = {}) {
  * @param {DomDocument} doc
  * @param {DomNode} node
  * @param {Object} [opts={}]
+ * @param {WeakMap} [nodePropertyMap=new WeakMap()]
  */
-function sanitizeChildNodes(doc, node, nodePropertyMap, opts = {}) {
-  sanitizeDom(doc, node, nodePropertyMap, true, opts);
+function sanitizeChildNodes(doc, node, opts = {}, nodePropertyMap = new WeakMap()) {
+  sanitizeDom(doc, node, opts, true, nodePropertyMap);
 }
 
 /**
@@ -52,19 +54,23 @@ function sanitizeChildNodes(doc, node, nodePropertyMap, opts = {}) {
  * @param {DomDocument} doc
  * @param {string} html
  * @param {Object} [opts={}]
+ * @param {Boolean} [isDocument=false]
+ * @param {WeakMap} [nodePropertyMap=new WeakMap()]
  * @returns {DomNode[]} The root nodes of the HTML string after parsing and processing
  */
-function sanitizeHtml(doc, html, nodePropertyMap, opts = {}) {
-  if (!(doc && typeof doc.createElement === 'function')) { // simple interface check
-    throw new Error('Need DOM Document interface');
-  }
+function sanitizeHtml(doc, html, opts = {}, isDocument = false, nodePropertyMap = new WeakMap()) {
+  const sandbox = doc.implementation.createHTMLDocument('');
 
   // Put the HTML into a sandbox (no remote content will be fetched).
-  const sandbox = doc.implementation.createHTMLDocument('');
-  sandbox.documentElement.innerHTML = html;
+  if (isDocument) {
+    sandbox.documentElement.innerHTML = html;
+    sanitizeChildNodes(doc, sandbox.documentElement, opts, nodePropertyMap);
+    return sandbox.documentElement.outerHTML;
+  }
 
-  sanitizeDom(doc, sandbox.body, nodePropertyMap, true, opts);
-
+  // isDocument is false
+  sandbox.body.innerHTML = html;
+  sanitizeChildNodes(doc, sandbox.body, opts, nodePropertyMap);
   return sandbox.body.innerHTML;
 }
 

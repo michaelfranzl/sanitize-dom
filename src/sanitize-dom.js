@@ -173,10 +173,6 @@ import { filterAttributesForNode, filterClassesForNode } from './lib/attributes.
  *
  * @param {DomDocument} doc The document
  * @param {DomNode} contextNode - The root node
- * @param {WeakMap} nodePropertyMap - To store properties for nodes
- * @param {Bool} [childrenObly=false] - If false, then the node itself and its descendants are
- * processed recursively. If true, then only the children and its descendants are processed
- * recursively, but not the node itself (use when `node` is `BODY` or `DocumentFragment`).
  * @param {Object} [opts={}] - Options for processing.
  * @param {FilterSpec} [opts.filters_by_tag={}] - Matching filters are called with the node.
  * @param {ParentChildSpec} [opts.remove_tags_direct={}] - Matching nodes which are a direct child
@@ -200,14 +196,18 @@ import { filterAttributesForNode, filterClassesForNode } from './lib/attributes.
  * only white space.
  * @param {Tagname[]} [opts.join_siblings=[]] Join same-tag sibling nodes of given tag names, unless
  * they are separated by non-whitespace textNodes.
+ * @param {Bool} [childrenOnly=false] - If false, then the node itself and its descendants are
+ * processed recursively. If true, then only the children and its descendants are processed
+ * recursively, but not the node itself (use when `node` is `BODY` or `DocumentFragment`).
+ * @param {WeakMap} nodePropertyMap - To store properties for nodes
  *
 */
 function sanitizeDom(
   doc,
   contextNode,
-  nodePropertyMap,
-  childrenOnly = false,
   options = {},
+  childrenOnly = false,
+  nodePropertyMap = new WeakMap(),
 ) {
   const optionDefaults = {
     filters_by_tag: {},
