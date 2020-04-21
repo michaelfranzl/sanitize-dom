@@ -295,6 +295,8 @@ function sanitizeDom(
 
   // This 'flattens' a node.
   function childNodesToSanitizedSiblings(node) {
+    if (!node.parentNode) return;
+
     function moveChildNodesToFragment(nd) {
       const fragment = doc.createDocumentFragment();
       const children = childrenSnapshot(nd);

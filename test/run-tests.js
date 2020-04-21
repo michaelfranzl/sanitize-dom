@@ -3,7 +3,7 @@
 
 import assert from 'assert';
 
-import { sanitizeChildNodes, sanitizeHtml } from '../src/index.js';
+import { sanitizeNode, sanitizeChildNodes, sanitizeHtml } from '../src/index.js';
 
 function runTests(doc, container) {
 
@@ -35,6 +35,21 @@ function runTests(doc, container) {
         }()), /Need DOM Node interface/,
       );
     });
+  });
+
+  specify('sanitizeNode works', () => {
+    const par = doc.createElement('P');
+    const span = doc.createElement('SPAN');
+    par.appendChild(span);
+    span.innerHTML = 'abc';
+
+    sanitizeNode(doc, par, {
+      allow_tags_direct: {
+        '.*': 'P',
+      },
+    });
+
+    assert.equal(par.outerHTML, '<p>abc</p>');
   });
 
   it('can work with documents (with the HTML level)', () => {
