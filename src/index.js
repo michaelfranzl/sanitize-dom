@@ -23,26 +23,25 @@ import sanitizeDom from './sanitize-dom.js';
 import childrenSnapshot from './lib/children-snapshot.js';
 
 /**
- * Simple wrapper for {@link sanitizeDom} but sets `childrenOnly` to `false`, thus processes
- * the node itself and its childNodes recursively.
+ * Simple wrapper for {@link sanitizeDom}. Processes the node and its childNodes recursively.
  *
  * @param {DomDocument} doc
  * @param {DomNode} node
  * @param {Object} [opts={}]
- * @param {WeakMap} [nodePropertyMap=new WeakMap()]
+ * @param {WeakMap.<DomNode, Object>} [nodePropertyMap=new WeakMap()] Additional node properties
  */
 function sanitizeNode(doc, node, opts = {}, nodePropertyMap = new WeakMap()) {
   sanitizeDom(doc, node, opts, false, nodePropertyMap);
 }
 
 /**
- * Simple wrapper for {@link sanitizeDom} but sets `childrenOnly` to `true`, thus processes
- * only the node's childNodes recursively, but not the node itself.
+ * Simple wrapper for {@link sanitizeDom}. Processes only the node's childNodes recursively, but not
+ * the node itself.
  *
  * @param {DomDocument} doc
  * @param {DomNode} node
  * @param {Object} [opts={}]
- * @param {WeakMap} [nodePropertyMap=new WeakMap()]
+ * @param {WeakMap.<DomNode, Object>} [nodePropertyMap=new WeakMap()] Additional node properties
  */
 function sanitizeChildNodes(doc, node, opts = {}, nodePropertyMap = new WeakMap()) {
   sanitizeDom(doc, node, opts, true, nodePropertyMap);
@@ -54,9 +53,11 @@ function sanitizeChildNodes(doc, node, opts = {}, nodePropertyMap = new WeakMap(
  * @param {DomDocument} doc
  * @param {string} html
  * @param {Object} [opts={}]
- * @param {Boolean} [isDocument=false]
- * @param {WeakMap} [nodePropertyMap=new WeakMap()]
- * @returns {DomNode[]} The root nodes of the HTML string after parsing and processing
+ * @param {Boolean} [isDocument=false] Set this to `true` if you are passing an entire HTML document
+ * (beginning with the <html> tag). The context node name will be HTML. If `false`, then the
+ * context node name will be BODY.
+ * @param {WeakMap.<DomNode, Object>} [nodePropertyMap=new WeakMap()] Additional node properties
+ * @returns {String} The processed HTML
  */
 function sanitizeHtml(doc, html, opts = {}, isDocument = false, nodePropertyMap = new WeakMap()) {
   const sandbox = doc.implementation.createHTMLDocument('');

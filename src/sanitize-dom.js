@@ -43,23 +43,17 @@ import { filterAttributesForNode, filterClassesForNode } from './lib/attributes.
 /**
  * Implements the WHATWG DOM Node interface.
  *
- * In addition, two custom property names are recognized (see properties below).
- * These custom properties may be set by {@link filter}s or by the user
- * before {@link sanitizeDom} is run. {@link sanitizeDom} removes those
- * attributes from the DomNode after each run.
+ * Custom properties for each node can be stored in a `WeakMap` passed as option `nodePropertyMap`
+ * to one of the sanitize functions.
  *
  * @see {@link https://dom.spec.whatwg.org/#interface-node}
  * @typedef {Object} DomNode
- * @property {boolean} skip_filters If truthy, disables all filters for this node.
- * @property {boolean} skip If truthy, disables all processing of this node.
- * @property {boolean} skip_classes If truthy, disables processing classes of this node.
- * @property {boolean} skip_attributes If truthy, disables processing attributes of this node.
  */
 
 /**
- * All-uppercase node tag name.
+ * Node tag name.
  *
- * Even though in the WHATWG DOM text nodes (nodeType 3) have a tag name '#text',
+ * Even though in the WHATWG DOM text nodes (nodeType 3) have a tag name `#text`,
  * these are referred to by the simpler string 'TEXT' for convenience.
  *
  * @typedef {string} Tagname
@@ -70,33 +64,33 @@ import { filterAttributesForNode, filterClassesForNode } from './lib/attributes.
  */
 
 /**
- * A string which is compiled to a regular expression with `new RegExp('^' + Regex + '$')`. The
+ * A string which is compiled to a regular expression with `new RegExp('^' + Regex + '$', 'i')`. The
  * regular expression is used to match a {@link Tagname}.
  *
  * @typedef {string} Regex
  * @example
  * '.*'         // matches any tag
  * 'DIV'        // matches DIV
- * 'DIV|H[1-3]' // matches DIV, H1, H2 and H3
+ * '(DIV|H[1-3])' // matches DIV, H1, H2 and H3
+ * '[^B]'       // everything except B
  * 'TEXT'       // matches text nodes (nodeType 3)
  */
 
 /**
- * Property names are matched against a parent node's {@link Tagname}. Associated values are matched
- * against a children node's {@link Tagname}. If parent and child must be direct or deep descendants
- * depends on the usage of this type.
+ * Property names are matched against a (direct or ancestral) parent node's {@link Tagname}.
+ * Associated values are matched against the current nodes {@link Tagname}.
  *
  * @typedef {Object.<Regex, Regex[]>} ParentChildSpec
  * @example
  * {
- *   'DIV|SPAN': ['H[1-3]', 'B'], // matches H1, H2, H3 and B within DIV or SPAN
+ *   '(DIV|SPAN)': ['H[1-3]', 'B'], // matches H1, H2, H3 and B within DIV or SPAN
  *   'STRONG': ['.*'] // matches all tags within STRONG
  * }
  */
 
 /**
- * Property names are matched against a node's {@link Tagname}. Associated values are used to match
- * attribute names.
+ * Property names are matched against the current nodes {@link Tagname}. Associated values are
+ * used to match its attribute names.
  *
  * @typedef {Object.<Regex, Regex[]>} TagAttributeNameSpec
  * @example
@@ -107,8 +101,8 @@ import { filterAttributesForNode, filterClassesForNode } from './lib/attributes.
  */
 
 /**
- * Property names are matched against a node's {@link Tagname}. Associated values are used to match
- * class names.
+ * Property names are matched against the current nodes {@link Tagname}. Associated values are used
+ * to match its class names.
  *
  * @typedef {Object.<Regex, Regex[]>} TagClassNameSpec
  * @example
@@ -129,7 +123,7 @@ import { filterAttributesForNode, filterClassesForNode } from './lib/attributes.
 /**
  * Filter functions can either...
  *
- * 1. modify (or not) `node` and return it again,
+ * 1. return the same node (the first argument),
  * 2. return a single, or an Array of, newly created {@link DomNode}(s), in which case `node` is
  * replaced with the new node(s),
  * 3. return `null`, in which case `node` is removed.
@@ -139,20 +133,28 @@ import { filterAttributesForNode, filterClassesForNode } from './lib/attributes.
  *
  * If a filter returns a newly generated {@link DomNode} with the same {@link Tagname} as `node`, it
  * would cause the same filter to be called again, which may lead to an infinite loop if the filter
- * is always returning the same result. In this case, in order to prevent the infinite loop, an
- * exception is thrown immediately. The author of the filter must set custom attributes
- * (see {@link DomNode}) on the node, which may or may not allow subsequent filtering/processing.
- * With well-behaved filters it is possible to continue subsequent processing.
+ * is always returning the same result (this would be a badly behaved filter). To protect against
+ * infinite loops, the author of the filter must acknowledge this circumstance by setting a boolean
+ * property called 'skip_filters' for the {@link DomNode}) (in a `WeakMap` which the caller must
+ * provide to one of the sanitize functions as the argument `nodePropertyMap`). If 'skip_filters' is
+ * not set, an error is thrown. With well-behaved filters it is possible to continue subsequent
+ * processing of the returned node without causing an infinite loop.
  *
  * @callback filter
  * @param {DomNode} node Currently processed node
- * @param {DomNode[]} parents The parent nodes of `node`.
- * @param {Tagname[]} parentNodenames The tag names of the parent nodes, provided for convenience.
+ * @param {Object} opts
+ * @param {DomNode[]} opts.parents The parent nodes of `node`.
+ * @param {Tagname[]} opts.parentNodenames The tag names of the parent nodes
+ * @param {Integer} opts.siblingIndex The number of the current node amongst its siblings
  * @returns {(DomNode|DomNode[]|null)}
  */
 
 
 /**
+ * This function is not exported: Please use the wrapper functions instead:
+ *
+ * {@link sanitizeHtml}, {@link sanitizeNode}, and {@link sanitizeChildNodes}.
+ *
  * Recursively processes a tree with `node` at the root.
  *
  * In all descriptions, the term "flatten" means that a node is replaced with the node's childNodes.
@@ -192,14 +194,18 @@ import { filterAttributesForNode, filterClassesForNode } from './lib/attributes.
  * @param {TagClassNameSpec} [opts.allow_classes_by_tag={}] - Matching class names of a matching
  * node are kept. Other class names are removed. If no class names are remaining, the class
  * attribute is removed.
- * @param {boolean} [opts.remove_empty=false] Remove nodes which are completely empty or contain
- * only white space.
+ * @param {boolean} [opts.remove_empty=false] Remove nodes which are completely empty
  * @param {Tagname[]} [opts.join_siblings=[]] Join same-tag sibling nodes of given tag names, unless
  * they are separated by non-whitespace textNodes.
  * @param {Bool} [childrenOnly=false] - If false, then the node itself and its descendants are
  * processed recursively. If true, then only the children and its descendants are processed
  * recursively, but not the node itself (use when `node` is `BODY` or `DocumentFragment`).
- * @param {WeakMap} nodePropertyMap - To store properties for nodes
+ * @param {WeakMap.<DomNode, Object>} [nodePropertyMap=new WeakMap()] - Additional properties for a
+ * {@link DomNode} can be stored in an object and will be looked up in this map. The properties of
+ * the object and their meaning: `skip`: If truthy, disables all processing for this node.
+ * `skip_filters`: If truthy, disables all filters for this node. `skip_classes`: If truthy,
+ * disables processing classes of this node.  `skip_attributes`: If truthy, disables processing
+ * attributes of this node. See tests for usage details.
  *
 */
 function sanitizeDom(

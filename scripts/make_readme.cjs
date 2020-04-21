@@ -4,7 +4,7 @@ const jsdoc2md = require('jsdoc-to-markdown');
 
 const output = jsdoc2md.renderSync({
   files: 'src/*.js',
-  template: fs.readFileSync('README.hbs').toString(),
+  template: fs.readFileSync('README_template.md').toString(),
 });
 fs.writeFileSync('README.md', output);
 
