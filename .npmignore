@@ -1,0 +1,8 @@
+.npmignore
+.github
+scripts
+doc
+test
+jsdoc-conf.json
+.eslintrc.json
+README_template.md
