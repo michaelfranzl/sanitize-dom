@@ -64,16 +64,17 @@ import { filterAttributesForNode, filterClassesForNode } from './lib/attributes.
  */
 
 /**
- * A string which is compiled to a regular expression with `new RegExp('^' + Regex + '$', 'i')`. The
- * regular expression is used to match a {@link Tagname}.
+ * A string which is compiled to a case-insensitive regular expression `new RegExp(regex, 'i')`.
+ * The regular expression is used to match a {@link Tagname}.
  *
  * @typedef {string} Regex
  * @example
- * '.*'         // matches any tag
- * 'DIV'        // matches DIV
+ * '.*'           // matches any tag
+ * 'DIV'          // matches DIV
  * '(DIV|H[1-3])' // matches DIV, H1, H2 and H3
- * '[^B]'       // everything except B
- * 'TEXT'       // matches text nodes (nodeType 3)
+ * 'P'            // matches P and SPAN
+ * '^P$'          // matches P but not SPAN
+ * 'TEXT'         // matches text nodes (nodeType 3)
  */
 
 /**

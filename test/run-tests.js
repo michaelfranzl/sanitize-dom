@@ -45,7 +45,7 @@ function runTests(doc, container) {
 
     sanitizeNode(doc, par, {
       allow_tags_direct: {
-        '.*': 'P',
+        '.*': '^P',
       },
     });
 
@@ -160,7 +160,7 @@ function runTests(doc, container) {
         assert.equal(
           run('<h1>abc</h1><p><span>def</span>ghi</p><h2>jkl</h2><p>mno</p><h3>pqr</h3>', {
             allow_tags_direct: {
-              '.*': ['H[1-2]', 'P'],
+              '.*': ['H[1-2]', '^P'],
             },
           }),
           '<h1>abc</h1><p>defghi</p><h2>jkl</h2><p>mno</p>pqr',
@@ -228,7 +228,7 @@ function runTests(doc, container) {
       assert.equal(
         run('<b>abc <i>def <b>ghi</b></i></b>', {
           flatten_tags_deep: {
-            B: ['B'],
+            '^B$': ['B'],
           },
           allow_tags_direct: {
             '.*': '.*',
@@ -638,7 +638,7 @@ function runTests(doc, container) {
 
       sanitizeChildNodes(doc, container, {
         allow_tags_direct: {
-          '.*': ['P'],
+          '.*': ['^P'],
         },
       }, nodePropertyMap);
 
@@ -649,7 +649,7 @@ function runTests(doc, container) {
 
       sanitizeChildNodes(doc, container, {
         allow_tags_direct: {
-          '.*': ['P'],
+          '.*': ['^P'],
         },
       }, nodePropertyMap);
 
@@ -676,7 +676,7 @@ function runTests(doc, container) {
       assert.equal(
         run('<div><span hello="abc" hi="def" ghi="jkl">mno</span></div>', {
           allow_tags_direct: { '.*': '.*' },
-          allow_attributes_by_tag: { 's.*': 'h.*' },
+          allow_attributes_by_tag: { '^s.*': '^h.*' },
         }),
         '<div><span hello="abc" hi="def">mno</span></div>',
       );
