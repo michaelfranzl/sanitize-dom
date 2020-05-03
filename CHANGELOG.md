@@ -7,7 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-WIP
+## [4.0.1] - 2020-05-03
+
+### Fixed
+
+- Joining of same-tag siblings (would drop a whitespace when joining more than 2 nodes)
+
+### Changed
+
+- Ran `npm audit fix`
+
 
 ## [4.0.0] - 2020-04-21
 
