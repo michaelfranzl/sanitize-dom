@@ -88,6 +88,30 @@ function runTests(doc, container) {
       );
     });
 
+    it('joins same-tag siblings when separated by whitespace', () => {
+      assert.equal(
+        run('<b>abc</b> <b>def</b> <b>ghi</b>', {
+          join_siblings: ['B', 'I'],
+          allow_tags_direct: {
+            '.*': '.*',
+          },
+        }),
+        '<b>abc def ghi</b>',
+      );
+    });
+
+    it('joins same-tag siblings when not separated by whitespace', () => {
+      assert.equal(
+        run('<b>abc</b><b>def</b><b>ghi</b>', {
+          join_siblings: ['B', 'I'],
+          allow_tags_direct: {
+            '.*': '.*',
+          },
+        }),
+        '<b>abcdefghi</b>',
+      );
+    });
+
     it('does not join same-tag siblings when separated by non-whitespace text', () => {
       assert.equal(
         run('<b>abc</b> x <b>def</b>', {
